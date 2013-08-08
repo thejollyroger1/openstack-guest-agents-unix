@@ -23,6 +23,8 @@ BACKUP_NOVA_AGENT=$SYSTEM_NOVA_AGENT".original"
 
 NOVA_AGENT_BINTAR="$HOME/nova-agent/artifacts"
 
+DISTRO_NAME=`python -c "import platform ; print(platform.dist()[0])"`
+
 # create leading components of DEST except the last, then copy SOURCE to DEST
 # required by ./configure for Makefile to use it, doesn't Work in FreeBSD
 export INSTALL_D="D"
@@ -94,6 +96,14 @@ get_epel_repo(){
   rpm -ivh $EPEL_RPM && yum repolist
 }
 
+# install EL6 XEN repo
+get_xen_repo(){
+  XEN_URI='http://xenbits.xen.org/people/mayoung/EL6.xen/EL6.xen.repo'
+  XEN_RPM='/etc/yum.repos.d/el6.xen.repo'
+  curl -L -o $XEN_RPM $XEN_URI
+  yum repolist
+}
+
 # install pyxenstore from source
 install_pyxenstore(){
   cd /tmp
@@ -115,7 +125,11 @@ install_pre_requisite_redhat(){
   yum -y install git autoconf gcc gcc-c++ make automake libtool
   yum -y install python-crypto python-devel
 
-  yum install -y centos-release-xen.x86_64 &&  yum repolist
+  if [ $DISTRO_NAME == "centos" ]; then
+    yum install -y centos-release-xen.x86_64 &&  yum repolist
+  else
+    get_xen_repo
+  fi
   yum install -y xen-devel
   patchelf_git
 
@@ -347,6 +361,8 @@ function exit_now(){
   fi
   exit $1
 }
+
+shout "Building nova-agent BINTAR on ${DISTRO_NAME}"
 
 ## check if '/usr/share/nova-agent' is present and move it to original.$
 if [ -d $SYSTEM_NOVA_AGENT ]; then
