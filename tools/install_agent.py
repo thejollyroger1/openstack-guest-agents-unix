@@ -30,3 +30,5 @@ def install_tar():
     subprocess.call(["sh", "installer.sh"])
     time.sleep(2)
     subprocess.call(["%s" % nova_agent__process_path, "start"])
+
+install_tar()
