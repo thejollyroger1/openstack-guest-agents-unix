@@ -10,9 +10,10 @@ def install_tar():
     """
 
 
+    :rtype : object
  """
     agent_tar_path = "/root/nova-agent/nova-agent-Linux-x86_64-0.0.1.37.tar.gz"
-    installer_path = "~/nova-agent/"
+    installer_path = "/root/nova-agent/"
     nova_agent__process_path = "/etc/init.d/nova-agent"
     nova_agent_path = "/usr/share/nova-agent/"
     if os.path.exists(nova_agent_path):
@@ -25,9 +26,10 @@ def install_tar():
     subprocess.call(["tar", "-zvxf", "%s" % agent_tar_path])
     time.sleep(5)
     os.chdir(installer_path)
-    subprocess.call(["cd", "%s" % installer_path])
+    #subprocess.call(["cd", "%s" % installer_path])
     subprocess.call(["sh", "installer.sh"])
     time.sleep(2)
     subprocess.call(["%s" % nova_agent__process_path, "start"])
+
 
 install_tar()
