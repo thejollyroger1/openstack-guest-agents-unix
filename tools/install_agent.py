@@ -21,7 +21,8 @@ def install_tar():
         subprocess.call(["%s" % nova_agent__process_path, "stop"])
 
     if os.path.exists(nova_agent_path):
-        shutil.move(nova_agent_path, "/tmp")
+        #shutil.move(nova_agent_path, "/tmp")
+        subprocess.call(["rm", "-rf", "%s" % nova_agent_path])
 
     if not os.path.exists(installer_path):
         os.mkdir(installer_path)
