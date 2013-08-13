@@ -1,3 +1,6 @@
+*.cfg
+.temp
+tests/shell_tests/shunit2/*
 *.pyc
 *.swo
 *.swp
