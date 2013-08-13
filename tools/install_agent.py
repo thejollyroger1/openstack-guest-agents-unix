@@ -17,7 +17,7 @@ def install_tar():
     installer_path = "/root/nova-agent/"
     nova_agent__process_path = "/etc/init.d/nova-agent"
     nova_agent_path = "/usr/share/nova-agent/"
-    if os.path.exists(nova_agent_path):
+    if os.path.exists(nova_agent__process_path):
         subprocess.call(["%s" % nova_agent__process_path, "stop"])
 
     if os.path.exists(nova_agent_path):

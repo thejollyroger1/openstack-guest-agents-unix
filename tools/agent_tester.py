@@ -21,9 +21,9 @@ def _call_agent_xenstore(key, val):
     xen_read = subprocess.call(["xenstore-read", "data/guest/%s" % uuid1])
     print(str(xen_read))
 
+
 def get_agent_version():
     """
-
     :rtype : object
     """
     print("Version Check")
@@ -32,7 +32,6 @@ def get_agent_version():
 
 def reset_network():
     """
-
     :rtype : object
     """
     print("Performing reset network")
