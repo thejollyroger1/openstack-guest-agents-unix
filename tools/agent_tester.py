@@ -3,6 +3,26 @@ Author__ = 'Admin'
 import uuid
 import subprocess
 import time
+import platform
+import os
+import shutil
+
+
+def install_uuid():
+    """
+
+    :rtype : object
+    """
+    subprocess.call("curl -Lko uuid-1.30.tar.gz "
+                    "https://pypi.python.org/packages/source"
+                    "/u/uuid/uuid-1.30.tar.gz#md5=639b310f1fe6800e4bf8aa1dd9333117")
+    os.mkdir("/root/uuid")
+    shutil.move("uuid-1.30.tar.gz", "/root/uuid")
+    os.chdir("/root/uuid")
+    subprocess.call(["tar", "-zvxf", "uuid-1.30.tar.gz"])
+    time.sleep(4)
+    os.chdir("/root/uuid/uuid-1.30/")
+    subprocess.call("python setup.py install")
 
 
 def _call_agent_xenstore(key, val):
@@ -12,6 +32,12 @@ def _call_agent_xenstore(key, val):
     :param self:
     :param key:
     """
+
+    if 'redhat' in platform.dist():
+        if int(float(platform.dist()[1])) == 5:
+    #if (set(['redhat', '5.6']).issubset(set(platform.dist()))):
+            install_uuid()
+
     uuid1 = uuid.uuid1()
     print(uuid1)
     print(key)
