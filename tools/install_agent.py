@@ -58,7 +58,7 @@ def install_tar():
     os.chdir(installer_path)
     subprocess.call(["tar", "-zvxf", "%s" % agent_tar_path])
     time.sleep(8)
-    subprocess.call(["sh", "installer.sh"])
+    subprocess.call(["./installer.sh"])
     time.sleep(5)
     subprocess.call(["%s" % nova_agent__process_path, "start"])
     subprocess.call(["rm", "-rf", "%s" % installer_path])
