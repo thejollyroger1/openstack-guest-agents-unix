@@ -54,7 +54,7 @@ iface lo inet loopback
 
 
 def update_resolvconf():
-    if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off'
+    if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off':
         logging.debug("'resolvconf' has been turned off for system Environment")
 
     if is_system_command("resolvconf"):
