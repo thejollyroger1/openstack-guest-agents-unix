@@ -34,7 +34,7 @@ import time
 from cStringIO import StringIO
 
 import commands.network
-from commands.common.utils import is_system_command
+from commands.utils import is_system_command
 
 HOSTNAME_FILE = "/etc/hostname"
 INTERFACE_FILE = "/etc/network/interfaces"
