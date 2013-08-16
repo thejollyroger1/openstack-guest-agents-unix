@@ -34,9 +34,14 @@ import time
 from cStringIO import StringIO
 
 import commands.network
+from commands.common.utils import is_system_command
 
 HOSTNAME_FILE = "/etc/hostname"
 INTERFACE_FILE = "/etc/network/interfaces"
+
+RESOLV_CONF="/etc/resolv.conf"
+RESOLVCONF_RESOLV_CONF="/run/resolvconf/resolv.conf"
+RESOLVCONF_CONF="/etc/resolvconf.conf"
 
 INTERFACE_HEADER = \
 """
@@ -46,6 +51,31 @@ INTERFACE_HEADER = \
 auto lo
 iface lo inet loopback
 """.lstrip('\n')
+
+
+def update_resolvconf():
+    if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off'
+        logging.debug("'resolvconf' has been turned off for system Environment")
+
+    if is_system_command("resolvconf"):
+        if os.path.islink(RESOLV_CONF):
+            logging.debug("%s is already a link" % RESOLV_CONF)
+        else:
+            # getting config files and symlinks as per required
+            os.rename(RESOLV_CONF, RESOLVCONF_CONF)
+            open(RESOLVCONF_RESOLV_CONF, 'a').close()
+            os.symlink(RESOLVCONF_RESOLV_CONF, RESOLV_CONF)
+
+        # updating the resolv.conf as per dns-nameservers
+        logging.debug("Caliing 'resolvconf' to updated %s" % RESOLV_CONF)
+        status = subprocess.call(["resolvconf", "-u"])
+        logging.debug('"resolvconf -u" exited with code %d' %
+            status)
+        return True
+    else:
+        logging.debug("'resolvconf' not configured")
+
+    return False
 
 
 def configure_network(hostname, interfaces):
@@ -58,13 +88,11 @@ def configure_network(hostname, interfaces):
     update_files[HOSTNAME_FILE] = data
 
     # Generate new /etc/resolv.conf file
-    # We do write dns-nameservers into the interfaces file, but that
-    # only updates /etc/resolv.conf if the 'resolvconf' package is
-    # installed.  Let's go ahead and modify /etc/resolv.conf.  It's just
-    # possible that it could get re-written twice.. oh well.
-    filepath, data = commands.network.get_resolv_conf(interfaces)
-    if data:
-        update_files[filepath] = data
+    # Uses resolvconf utility if present else creates /etc/resolv.conf
+    if not update_resolvconf():
+        filepath, data = commands.network.get_resolv_conf(interfaces)
+        if data:
+            update_files[filepath] = data
 
     # Generate new /etc/hosts file
     filepath, data = commands.network.get_etc_hosts(interfaces, hostname)
