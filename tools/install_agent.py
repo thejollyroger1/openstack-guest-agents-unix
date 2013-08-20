@@ -57,6 +57,7 @@ def install_tar():
     installer_path = "/root/nova-agent/"
     nova_agent__process_path = "/etc/init.d/nova-agent"
     nova_agent_path = "/usr/share/nova-agent/"
+    nova_agent_bin_path = "/usr/sbin/nova-agent"
 
     if os.path.exists(nova_agent__process_path):
         subprocess.call(["%s" % nova_agent__process_path, "stop"])
@@ -64,6 +65,10 @@ def install_tar():
     if os.path.exists(nova_agent_path):
         #shutil.move(nova_agent_path, "/tmp")
         subprocess.call(["rm", "-rf", "%s" % nova_agent_path])
+
+    if os.path.exists(nova_agent_bin_path):
+        #shutil.move(nova_agent_path, "/tmp")
+        subprocess.call(["rm", "-rf", "%s" % nova_agent_bin_path])
 
     if not os.path.exists(installer_path):
         os.mkdir(installer_path)
