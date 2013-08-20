@@ -180,7 +180,7 @@ install_pre_requisite_freebsd(){
     export INSTALL_D=""
     uname -a
 
-    pkg_add -r git autogen automake wget
+    pkg_add -r git autogen automake wget bash
     pkg_add -r py27-unittest2 py27-cryptkit py27-pycrypto py27-mox
 
     # re-install xen-tool :: required for pyxenstore install
@@ -288,13 +288,29 @@ clone_nova_agent(){
   patch_nova_agent
 }
 
+# change sh to bash if FreeBSD
+## not usin sed -i or tee ; giving some issues
+sh_to_bash_if_bsd(){
+  SH_PATH="\/bin\/sh"
+  BASH_PATH="\/usr\/local\/bin\/bash"
+  if [ `uname -s` == 'FreeBSD' ] ; then
+    sed "s/${SH_PATH}/${BASH_PATH}/g" "${1}" > "${1}.bash"
+    mv "${1}.bash" "${1}"
+    chmod 0755 "${1}"
+  fi
+}
+
 make_nova_agent(){
   install_pre_requisite
 
   clone_nova_agent
 
   sh autogen.sh
+  ## placing this as a QuickFix for build-error on FreeBSD
+  ## will be fixing it at AutoTools config level once prior tasks are done
+  sh_to_bash_if_bsd "./configure"
   ./configure --sbindir=/usr/sbin INSTALL_D="$INSTALL_D"
+  sh_to_bash_if_bsd "./lib/Makefile"
   make
 }
 
@@ -385,6 +401,9 @@ elif [ "$1" = "bintar" ]; then
 elif [ "$1" = "bintar_no_test" ]; then
   shout "Running create Bin tar without tests"
   bintar_nova_agent_without_test
+elif [ "$1" = "install_pre_requisite" ]; then
+  shout "Just installing pre-requisite... required in certain use-cases."
+  install_pre_requisite
 else
   echo $help
   exit_now 1
