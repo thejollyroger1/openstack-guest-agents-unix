@@ -58,7 +58,7 @@ import arch.network
 import suse.network
 import gentoo.network
 import freebsd.network
-from utils import is_system_command
+import utils
 
 XENSTORE_INTERFACE_PATH = "vm-data/networking"
 XENSTORE_HOSTNAME_PATH = "vm-data/hostname"
@@ -462,7 +462,7 @@ def update_resolvconf():
     if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off':
         logging.info("'resolvconf' has been turned off for system Environment")
 
-    if is_system_command("resolvconf"):
+    if utils.is_system_command("resolvconf"):
         if os.path.islink(RESOLV_CONF_FILE):
             logging.info("%s is already a link" % RESOLV_CONF_FILE)
         else:
@@ -472,11 +472,8 @@ def update_resolvconf():
             os.symlink(RESOLVCONF_RESOLV_CONF_FILE, RESOLV_CONF_FILE)
 
         # updating the resolv.conf as per dns-nameservers
-        logging.info("Caliing 'resolvconf' to updated %s" % RESOLV_CONF_FILE)
-        status = subprocess.call(["resolvconf", "-u"])
-        logging.info('"resolvconf -u" exited with code %d' %
-            status)
-        return True
+        return utils.run_without_error("resolvconf -u")
+
     else:
         logging.info("'resolvconf' not configured")
 

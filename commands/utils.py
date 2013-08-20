@@ -21,14 +21,24 @@ utils module with common utility set commands
 """
 
 # Utilities:
-# - is_system_command(<command_name>) : boolean for command in system exec path
+    # - is_system_command(<command_name>) : boolean for command in system exec path
 
 import sys
+import logging
 import subprocess
 
-def is_system_command(cmd="python"):
+def is_system_command(cmd):
     return subprocess.call("type " + cmd,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-        ) == 0
+                           shell=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE
+                          ) == 0
+
+
+def run_without_error(cmd):
+    logging.info("Calling '%s'" % cmd)
+    status = subprocess.call(cmd.split())
+    logging.info("'%s' exited with code %d" % (cmd, status))
+    if status == 0:
+        return True
+    return False
