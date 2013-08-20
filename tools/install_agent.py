@@ -5,6 +5,16 @@ import subprocess
 import shutil
 import time
 import platform
+import json
+import urllib2
+
+
+def latest_github_tag():
+    """ Returns latest Release Tag at GitHub. """
+    release_tags_github_url = "https://api.github.com/repos/rackerlabs/openstack-guest-agents-unix/tags"
+    release_tags_json = urllib2.urlopen(release_tags_github_url)
+    release_tags_data = json.load(release_tags_json)
+    return str(release_tags_data[0]['name'])[1:]
 
 
 def install_uuid():
@@ -39,8 +49,9 @@ def install_tar():
 
     :rtype : object
  """
-    agent_tar_path = "/root/nova-agent/nova-agent-Linux-x86_64-0.0.1.37.tar.gz"
-    nova_file = "nova-agent-Linux-x86_64-0.0.1.37.tar.gz"
+    release_tag = latest_github_tag()
+    agent_tar_path = "/root/nova-agent/nova-agent-Linux-x86_64-%s.tar.gz" % release_tag
+    nova_file = "nova-agent-Linux-x86_64-%s.tar.gz" % release_tag
     installer_path = "/root/nova-agent/"
     nova_agent__process_path = "/etc/init.d/nova-agent"
     nova_agent_path = "/usr/share/nova-agent/"
