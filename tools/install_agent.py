@@ -50,11 +50,14 @@ def install_tar():
     :rtype : object
  """
     release_tag = latest_github_tag()
+    subprocess.call(["curl", "-LkO", "https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download"
+                                     "/v%s/nova-agent-Linux-x86_64-%s.tar.gz" % (release_tag, release_tag)])
     agent_tar_path = "/root/nova-agent/nova-agent-Linux-x86_64-%s.tar.gz" % release_tag
     nova_file = "nova-agent-Linux-x86_64-%s.tar.gz" % release_tag
     installer_path = "/root/nova-agent/"
     nova_agent__process_path = "/etc/init.d/nova-agent"
     nova_agent_path = "/usr/share/nova-agent/"
+
     if os.path.exists(nova_agent__process_path):
         subprocess.call(["%s" % nova_agent__process_path, "stop"])
 
@@ -68,7 +71,7 @@ def install_tar():
     shutil.move(nova_file, installer_path)
     os.chdir(installer_path)
     subprocess.call(["tar", "-zvxf", "%s" % agent_tar_path])
-    time.sleep(8)
+    time.sleep(10)
     subprocess.call(["./installer.sh"])
     time.sleep(5)
     subprocess.call(["%s" % nova_agent__process_path, "start"])
