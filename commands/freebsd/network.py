@@ -52,9 +52,11 @@ def configure_network(hostname, interfaces):
     update_files[RCCONF_FILE] = data
 
     # Generate new /etc/resolv.conf file
-    filepath, data = commands.network.get_resolv_conf(interfaces)
-    if data:
-        update_files[filepath] = data
+    # Uses resolvconf utility if present else creates /etc/resolv.conf
+    if not commands.network.update_resolvconf():
+        filepath, data = commands.network.get_resolv_conf(interfaces)
+        if data:
+            update_files[filepath] = data
 
     # Generate new /etc/hosts file
     filepath, data = commands.network.get_etc_hosts(interfaces, hostname)
