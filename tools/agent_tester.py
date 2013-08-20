@@ -148,9 +148,9 @@ def reset_password():
 
 def ping_public_domain():
     domain = "http://www.google.com"
-    resp = subprocess.call(["curl", "-Is", "%s" %domain])
-    out, err = resp.communicate()
-    print resp
+    subprocess.call(["curl", "-Is", "%s" %domain])
+    #out, err = resp.communicate()
+    #print resp
 
 
 get_agent_version()
