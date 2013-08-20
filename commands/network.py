@@ -66,8 +66,8 @@ DEFAULT_HOSTNAME = ''
 HOSTS_FILE = '/etc/hosts'
 RESOLV_CONF_FILE = '/etc/resolv.conf'
 
-RESOLVCONF_RESOLV_CONF="/run/resolvconf/resolv.conf"
-RESOLVCONF_CONF="/etc/resolvconf.conf"
+RESOLVCONF_RESOLV_CONF_FILE="/run/resolvconf/resolv.conf"
+RESOLVCONF_CONF_FILE="/etc/resolvconf.conf"
 
 if os.uname()[0].lower() == 'freebsd':
     INTERFACE_LABELS = {"public": "xn0",
@@ -460,24 +460,24 @@ def update_files(update_files, remove_files=None):
 
 def update_resolvconf():
     if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off':
-        logging.debug("'resolvconf' has been turned off for system Environment")
+        logging.info("'resolvconf' has been turned off for system Environment")
 
     if is_system_command("resolvconf"):
         if os.path.islink(RESOLV_CONF_FILE):
-            logging.debug("%s is already a link" % RESOLV_CONF_FILE)
+            logging.info("%s is already a link" % RESOLV_CONF_FILE)
         else:
             # getting config files and symlinks as per required
-            os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF)
+            os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
             open(RESOLVCONF_RESOLV_CONF_FILE, 'a').close()
             os.symlink(RESOLVCONF_RESOLV_CONF_FILE, RESOLV_CONF_FILE)
 
         # updating the resolv.conf as per dns-nameservers
-        logging.debug("Caliing 'resolvconf' to updated %s" % RESOLV_CONF_FILE)
+        logging.info("Caliing 'resolvconf' to updated %s" % RESOLV_CONF_FILE)
         status = subprocess.call(["resolvconf", "-u"])
-        logging.debug('"resolvconf -u" exited with code %d' %
+        logging.info('"resolvconf -u" exited with code %d' %
             status)
         return True
     else:
-        logging.debug("'resolvconf' not configured")
+        logging.info("'resolvconf' not configured")
 
     return False
