@@ -146,8 +146,16 @@ def reset_password():
     _call_agent_xenstore("password", enc_pass)
 
 
+def ping_public_domain():
+    domain = "http://www.google.com"
+    subprocess.call(["curl", "-Is", "%s" %domain])
+    #out, err = resp.communicate()
+    #print resp
+
+
 get_agent_version()
 time.sleep(2)
 reset_network()
 time.sleep(2)
 reset_password()
+ping_public_domain()
