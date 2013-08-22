@@ -30,9 +30,17 @@ pidfile="/var/run/nova-agent.pid"
 logfile="/var/log/nova-agent.log"
 loglevel="info"
 
-NOVA_PYTHON_PATH="$(python --version |& tr "[:upper:]" "[:lower:]" | tr -d " ")"
-NOVA_PYTHON_PATH="${reallibdir}/${NOVA_PYTHON_PATH%.*}"
-PYTHONPATH="$(python -c 'import sys; print ":".join(sys.path)'):${NOVA_PYTHON_PATH}:${NOVA_PYTHON_PATH}/site-packages"
+NOVA_PYTHONPATH=`ls -l $reallibdir | grep '^d' | awk '{print \$NF}'`
+NOVA_PYTHONPATH=`echo $NOVA_PYTHONPATH | grep 'python[0-9]\.[0-9]'`
+NOVA_PYTHONPATH="${reallibdir}/${NOVA_PYTHONPATH}"
+NOVA_PYTHONPATH="${NOVA_PYTHONPATH}:${NOVA_PYTHONPATH}/site-packages"
+
+if [ `which python > /dev/null 2>&1 ; echo $?` -eq 0 ]; then
+  PYTHONPATH="$(python -c 'import sys; print ":".join(sys.path)')"
+fi
+export PYTHONPATH="$NOVA_PYTHONPATH:$PYTHONPATH"
+export PYTHONHOME="$NOVA_PYTHONPATH:$PYTHONPATH"
+
 
 depend() {
   before net

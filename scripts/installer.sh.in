@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 #
@@ -23,6 +23,7 @@ exec_prefix="@exec_prefix@"
 sbindir="@sbindir@"
 datadir="@datarootdir@/@PACKAGE@"
 dataversdir="@datarootdir@/@PACKAGE@/@PACKAGE_VERSION@"
+reallibdir="@datarootdir@/@PACKAGE@/@PACKAGE_VERSION@/lib"
 version="@PACKAGE_VERSION@"
 
 umask 077
@@ -98,6 +99,26 @@ fi
 # Copy our version subdirectory to the target
 cp -R ${my_dir}/${dataversdir} ${dataversdir}
 
+# Creating Environment Variable file for SYSTEMD service script
+## condition checking if /sbin/init is symlink to systemd
+if [[ -L /sbin/init && "$(basename $(readlink /sbin/init))" == systemd ]]; then
+  if [ -f /etc/arch-release ] ; then
+    NOVA_PYTHONPATH=`ls -l ${reallibdir} | grep '^d' | awk '{print \$NF}'`
+    NOVA_PYTHONPATH=`echo ${NOVA_PYTHONPATH} | grep 'python[0-9]\.[0-9]'`
+    NOVA_PYTHONPATH="${reallibdir}/${NOVA_PYTHONPATH}"
+    NOVA_PYTHONPATH="${NOVA_PYTHONPATH}:${NOVA_PYTHONPATH}/site-packages"
+
+    PYTHONPATH="$(python2 -c 'import sys; print ":".join(sys.path)')"
+    PYTHONPATH="${NOVA_PYTHONPATH}:${PYTHONPATH}"
+
+    cat >> /etc/nova-agent.env <<-EOF
+PYTHONPATH=$PYTHONPATH
+EOF
+  else
+    touch /etc/nova-agent.env
+  fi
+fi
+
 # Install the init file symlink
 if [ -h /sbin/runscript ]; then
     # Gentoo Linux OpenRC style
@@ -109,7 +130,7 @@ elif [ -d /etc/init.d ]; then
     ln -s ${dataversdir}/etc/generic/nova-agent /etc/init.d/nova-agent
 elif [ -f /etc/arch-release ] ; then
     if [[ "$(basename $(readlink /sbin/init))" == systemd ]]; then
-        ln -sf ${dataversdir}/etc/systemd/nova-agent.service /etc/systemd/system/nova-agent.service
+        ln -sf ${dataversdir}/etc/systemd/system/nova-agent.service /etc/systemd/system/nova-agent.service
     else
         # Arch Linux
         rm -f /etc/rc.d/nova-agent
