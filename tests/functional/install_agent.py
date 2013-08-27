@@ -1,12 +1,43 @@
-__author__ = 'Admin'
+#!/usr/bin/env python
+"""
+to install latest release nova-agent from GitHub
+$ ./install_agent.py
+
+to install a specific release version from GitHub
+$ ./install_agent.py --version <XX.YY.ZZ.NN>
+
+to install a specific release version from another absolute URL
+$ ./install_agent.py --url <http://URL>
+
+to install a specific release version from already uploaded TGZ
+$ ./install_agent.py --local <local/path>
+"""
 
 import os
+import sys
 import subprocess
 import shutil
 import time
 import platform
 import json
 import urllib2
+
+distro_name = platform.dist()[0]
+distro_family = platform.system()
+
+
+def panic(msg):
+    """ To do suitable task on PANIC state, Exit and Call for help. """
+    println(msg)
+    sys.exit(1)
+
+
+def run_me_right(cmd):
+    """ Run what is asked for and Panic if it fails. """
+    println("Running: %s" % cmd)
+    statuscode = subprocess.call(cmd.split())
+    if statuscode != 0:
+        panic("FAILURE: %s" % cmd)
 
 
 def latest_github_tag():
@@ -17,100 +48,113 @@ def latest_github_tag():
     return str(release_tags_data[0]['name'])[1:]
 
 
+def download_link(link, to_file=""):
+    """ Curls down the link to a specific filename if provided or default. """
+    if to_file:
+        switch = "--create-dirs -skLo"
+    else:
+        switch = "-skL"
+    run_me_right("curl %s %s %s" % (switch, to_file, link))
+
+
 def install_uuid():
-    """
+    """ Installing UUID package for Testing purpose. """
+    version = "1.30"
+    base_path = "/tmp/uuid"
+    if os.path.exists(path):
+        run_me_right("%s stop" % base_path)
 
-        :rtype : object
-        """
-    os.chdir("/root")
-    subprocess.call(["curl", "-Lko", "uuid-1.30.tar.gz",
-                     "https://pypi.python.org/packages/source/u/uuid/"
-                     "uuid-1.30.tar.gz#md5=639b310f1fe6800e4bf8aa1dd9333117"])
-    os.mkdir("/root/uuid")
-    shutil.move("uuid-1.30.tar.gz", "/root/uuid")
-    os.chdir("/root/uuid")
-    subprocess.call(["tar", "-zvxf", "uuid-1.30.tar.gz"])
+    tar_name = "uuid-%s.tar.gz" % (version)
+    tar_path = "%s/%s" % (base_path, tar_name)
+
+    md5 = "md5=639b310f1fe6800e4bf8aa1dd9333117"
+    tar_url = "https://pypi.python.org/packages/source/u/uuid/uuid"
+    tar_url = "%s-%s.tar.gz#%s" % (tar_url, version, md5)
+
+    download_link(tar_url, tar_path)
+
+    os.chdir(base_path)
+    run_me_right("tar zvxf %s" % (tar_name))
     time.sleep(4)
-    os.chdir("/root/uuid/uuid-1.30/")
-    subprocess.call(["python", "setup.py", "install"])
-    os.chdir("/root")
+    os.chdir("%s/uuid-%s/" % (base_path, version))
+    run_me_right("python setup.py install")
 
 
-def identify_distro():
+class Nova:
+    def agent_remove(self, service_path):
+        """ Cleans up curret Nova Agent. """
+        if os.path.exists(path):
+            run_me_right("%s stop" % service_path)
+
+        paths_to_remove = ["/usr/share/nova-agent/",
+                          "/usr/sbin/nova-agent",
+                          service_path]
+
+        for path in paths_to_remove:
+            if os.path.exists(path):
+                run_me_right("rm -rf %s" % path)
+
+    def agent_install(self, **kwargs):
+        """ Cleans and Install latest agent. """
+        if (distro_family == 'Linux'):
+            service_path = "/etc/init.d/nova-agent"
+            tar_name = "nova-agent-Linux-x86_64-%s.tar.gz" % version
+        elif (distro_family == 'FreeBSD'):
+            run_me_right("pkg_add -r bash")
+            service_path = "/etc/rc.d/nova-agent"
+            tar_name = "nova-agent-FreeBSD-amd64-%s.tar.gz" % version
+        else:
+            panic("Distro Family '%s' is not supported." % distro_family)
+
+
+        if 'local' in kwargs:
+            tar_base_path = ''
+            tar_name = ''
+        else:
+            version = kwargs['version']
+            tar_base_path = "/root/nova-agent"
+            tar_path = "%s/%s" % (tar_base_path, tar_name)
+
+            if 'url' in kwargs:
+                tar_url = kwargs['url']
+            else:
+                git_url = "https://github.com/rackerlabs/openstack-guest-agents-unix"
+                tar_url = "%s/releases/download/v%s/%s" % (git_url, version, tar_name)
+            download_link(tar_url, tar_path)
+
+        self.agent_remove(service_path)
+
+        os.chdir(tar_base_path)
+        run_me_right("tar zvxf %s" % (tar_name))
+        time.sleep(5)
+        run_me_right("bash installer.sh")
+        time.sleep(5)
+        run_me_right("%s start" % service_path)
+
+        if 'redhat' in platform.dist():
+            if int(float(platform.dist()[1])) == 5:
+                install_uuid()
+
+
+def install_nova_agent():
     """
-        :return:
-        """
-    distro = platform.dist()[0]
-    return distro
-
-
-def check_distro():
+    Install nova_agent from github-latest-release, another url or local path
+    based tar file, using command line switches.
     """
+    if len(sys.argv) == 2:
+        config_key = sys.argv[0]
+        if config_key == '--version':
+            Nova().agent_install(version=sys.argv[1])
+            return
+        elif config_key == '--url':
+            Nova().agent_install(url=sys.argv[1])
+            return
+        elif config_key == '--local':
+            Nova().agent_install(local=sys.argv[1])
+            return
 
-        :rtype : String
-        """
-    return str(platform.system())
-
-
-def install_tar():
-    """
-
-        :rtype : object
-         """
-    release_tag = latest_github_tag()
-    distro = check_distro()
-
-    agent_tar_path = "/root/nova-agent/nova-agent-Linux-x86_64-%s.tar.gz" % release_tag
-    nova_file = "nova-agent-Linux-x86_64-%s.tar.gz" % release_tag
-    installer_path = "/root/nova-agent/"
-    nova_agent__process_path = "/etc/init.d/nova-agent"
-    nova_agent_path = "/usr/share/nova-agent/"
-    nova_agent_bin_path = "/usr/sbin/nova-agent"
-    agent_tar_path = "/root/nova-agent/%s" % nova_file
-    installer_command = ".installer.sh"
-
-    if (distro == 'FreeBSD'):
-        nova_agent__process_path = "/etc/rc.d/nova-agent"
-        nova_file = "nova-agent-FreeBSD-amd64-%s.tar.gz" % release_tag
-        agent_tar_path = "/root/nova-agent/%s" % nova_file
-        installer_command = "bash installer.sh"
-        subprocess.call(["pkg_add", "-r", "bash"])
-        subprocess.call(["curl", "-LkO", "https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download"
-                                         "/v%s/nova-agent-FreeBSD-amd64-%s.tar.gz" % (release_tag, release_tag)])
-    else:
-        subprocess.call(["curl", "-LkO", "https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download"
-                                         "/v%s/nova-agent-Linux-x86_64-%s.tar.gz" % (release_tag, release_tag)])
-
-    if os.path.exists(nova_agent__process_path):
-        subprocess.call(["%s" % nova_agent__process_path, "stop"])
-
-    if os.path.exists(nova_agent_path):
-        #shutil.move(nova_agent_path, "/tmp")
-        subprocess.call(["rm", "-rf", "%s" % nova_agent_path])
-
-    if os.path.exists(nova_agent_bin_path):
-        #shutil.move(nova_agent_path, "/tmp")
-        subprocess.call(["rm", "-rf", "%s" % nova_agent_bin_path])
-
-    if not os.path.exists(installer_path):
-        os.mkdir(installer_path)
-
-    shutil.move(nova_file, installer_path)
-    os.chdir(installer_path)
-    subprocess.call(["tar", "-zvxf", "%s" % agent_tar_path])
-    time.sleep(10)
-    if distro == 'FreeBSD':
-        subprocess.call(["bash", "installer.sh"])
-    else:
-        subprocess.call(["%s" % installer_command])
-    time.sleep(5)
-    subprocess.call(["%s" % nova_agent__process_path, "start"])
-    subprocess.call(["rm", "-rf", "%s" % installer_path])
-
-    if 'redhat' in platform.dist():
-        if int(float(platform.dist()[1])) == 5:
-        #if (set(['redhat', '5.6']).issubset(set(platform.dist()))):
-            install_uuid()
+    Nova().agent_install(version=latest_github_tag())
 
 
-install_tar()
+if __name__ == "__main__":
+    install_nova_agent()

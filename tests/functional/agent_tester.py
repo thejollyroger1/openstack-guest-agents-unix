@@ -1,4 +1,5 @@
-Author__ = 'Admin'
+#!/usr/bin/env python
+
 import binascii
 import uuid
 import subprocess
@@ -7,6 +8,7 @@ import os
 import re
 
 
+## adopted from openstack/nova codebase
 class SimpleDH(object):
     """
     This class wraps all the functionality needed to implement
@@ -50,10 +52,6 @@ class SimpleDH(object):
 
     def _run_ssl(self, text, decrypt=False):
         """
-
-        :param text:
-        :param decrypt:
-        :return: :raise:
         """
         _PIPE = subprocess.PIPE  # pylint: disable=E1101
         close_fds = True
@@ -83,10 +81,6 @@ class SimpleDH(object):
 
 def _call_agent_xenstore(key, val):
     """
-    :type key: object
-    :param val:
-    :param self:
-    :param key:
     """
     uuid1 = uuid.uuid1()
     print(uuid1)
@@ -100,7 +94,6 @@ def _call_agent_xenstore(key, val):
 
 def get_agent_version():
     """
-    :rtype : object
     """
     print("Version Check")
     _call_agent_xenstore("version", "agent")
@@ -108,7 +101,6 @@ def get_agent_version():
 
 def reset_network():
     """
-    :rtype : object
     """
     print("Performing reset network")
     _call_agent_xenstore("resetnetwork", "")
@@ -116,9 +108,6 @@ def reset_network():
 
 def set_key_init(key):
     """
-
-    :param key:
-    :return:
     """
     uuid1 = uuid.uuid1()
     subprocess.call(["xenstore-write", "data/host/%s" % uuid1, '{"name":"keyinit","value":"%s"}' % key])
@@ -132,8 +121,6 @@ def set_key_init(key):
 
 def reset_password():
     """
-
-
     """
     new_pass = "Password"
     dh = SimpleDH()
@@ -146,16 +133,24 @@ def reset_password():
     _call_agent_xenstore("password", enc_pass)
 
 
-def ping_public_domain():
+def curl_public_domain():
+    """
+    It tries to curl a Public Domain checking its IP configs and DNS resolving.
+    """
     domain = "http://www.google.com"
-    subprocess.call(["curl", "-Is", "%s" %domain])
-    #out, err = resp.communicate()
-    #print resp
+    statuscode = subprocess.call(["curl", "-Is", "%s" %domain])
+    if statuscode != 0:
+        print("Instance is not able to CURL www.google.com")
 
 
-get_agent_version()
-time.sleep(2)
-reset_network()
-time.sleep(2)
-reset_password()
-ping_public_domain()
+def test_all():
+    get_agent_version()
+    time.sleep(2)
+    reset_network()
+    time.sleep(2)
+    reset_password()
+    curl_public_domain()
+
+
+if __name__ == "__main__":
+    test_all()
