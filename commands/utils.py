@@ -37,8 +37,10 @@ def is_system_command(cmd):
 
 def run_without_error(cmd):
     logging.info("Calling '%s'" % cmd)
-    status = subprocess.call(cmd.split())
-    logging.info("'%s' exited with code %d" % (cmd, status))
-    if status == 0:
-        return True
-    return False
+    try:
+        status = subprocess.call(cmd.split())
+        logging.info("'%s' exited with code %d" % (cmd, status))
+        if status == 0:
+            return True
+    finally:
+        return False
