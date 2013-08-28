@@ -28,13 +28,13 @@ distro_family = platform.system()
 
 def panic(msg):
     """ To do suitable task on PANIC state, Exit and Call for help. """
-    println(msg)
+    print(msg)
     sys.exit(1)
 
 
 def run_me_right(cmd):
     """ Run what is asked for and Panic if it fails. """
-    println("Running: %s" % cmd)
+    print("Running: %s" % cmd)
     statuscode = subprocess.call(cmd.split())
     if statuscode != 0:
         panic("FAILURE: %s" % cmd)
@@ -83,7 +83,7 @@ def install_uuid():
 class Nova:
     def agent_remove(self, service_path):
         """ Cleans up curret Nova Agent. """
-        if os.path.exists(path):
+        if os.path.exists(service_path):
             run_me_right("%s stop" % service_path)
 
         paths_to_remove = ["/usr/share/nova-agent/",
@@ -96,6 +96,11 @@ class Nova:
 
     def agent_install(self, **kwargs):
         """ Cleans and Install latest agent. """
+        if 'version' in kwargs:
+            version = kwargs['version']
+        else:
+            version = 'custom'
+
         if (distro_family == 'Linux'):
             service_path = "/etc/init.d/nova-agent"
             tar_name = "nova-agent-Linux-x86_64-%s.tar.gz" % version
@@ -111,7 +116,6 @@ class Nova:
             tar_base_path = ''
             tar_name = ''
         else:
-            version = kwargs['version']
             tar_base_path = "/root/nova-agent"
             tar_path = "%s/%s" % (tar_base_path, tar_name)
 
