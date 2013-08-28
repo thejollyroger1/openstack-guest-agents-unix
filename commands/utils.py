@@ -42,5 +42,6 @@ def run_without_error(cmd):
         logging.info("'%s' exited with code %d" % (cmd, status))
         if status == 0:
             return True
-    finally:
-        return False
+    except:
+        logging.info("'%s' raised exception" % cmd)
+    return False
