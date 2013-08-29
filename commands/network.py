@@ -472,7 +472,9 @@ def update_resolvconf():
             os.symlink(RESOLVCONF_RESOLV_CONF_FILE, RESOLV_CONF_FILE)
 
         # updating the resolv.conf as per dns-nameservers
-        return utils.run_without_error("resolvconf -u")
+        retVal = utils.run_without_error("resolvconf -u")
+        logging.info("'resolvconf' completed with status code %s" % retVal)
+        return retval
 
     else:
         logging.info("'resolvconf' not configured")
