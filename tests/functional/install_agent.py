@@ -105,7 +105,7 @@ class Nova:
             service_path = "/etc/init.d/nova-agent"
             tar_name = "nova-agent-Linux-x86_64-%s.tar.gz" % version
         elif (distro_family == 'FreeBSD'):
-            run_me_right("pkg_add -r bash")
+            run_me_right("pkg_add -fr bash")
             service_path = "/etc/rc.d/nova-agent"
             tar_name = "nova-agent-FreeBSD-amd64-%s.tar.gz" % version
         else:
