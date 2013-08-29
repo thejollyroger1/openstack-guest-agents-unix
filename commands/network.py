@@ -474,7 +474,7 @@ def update_resolvconf():
         # updating the resolv.conf as per dns-nameservers
         retVal = utils.run_without_error("resolvconf -u")
         logging.info("'resolvconf' completed with status code %s" % retVal)
-        return retval
+        return retVal
 
     else:
         logging.info("'resolvconf' not configured")
