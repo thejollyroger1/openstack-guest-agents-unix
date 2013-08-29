@@ -80,6 +80,10 @@ export PYTHONPATH="$NOVA_PYTHONPATH:$PYTHONPATH"
 do_start() {
   LD_LIBRARY_PATH="${reallibdir}"
   export LD_LIBRARY_PATH
+  IP_LINK_UP_COUNT=`ip link show up | wc -l`
+  if [ $IP_LINK_UP_COUNT -lt 3 ]; then
+    sleep 20
+  fi
   ${nova_agent} -q -p ${pidfile} -o ${logfile} -l ${loglevel} ${agent_config}
 }
 
