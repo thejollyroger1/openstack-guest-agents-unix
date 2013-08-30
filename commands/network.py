@@ -43,6 +43,7 @@ from cStringIO import StringIO
 import fcntl
 import logging
 import os
+import subprocess
 import platform
 import pyxenstore
 import re
@@ -68,6 +69,7 @@ RESOLV_CONF_FILE = '/etc/resolv.conf'
 
 RESOLVCONF_RESOLV_CONF_FILE="/run/resolvconf/resolv.conf"
 RESOLVCONF_CONF_FILE="/etc/resolvconf.conf"
+RESOLVCONF_BASE = '/etc/resolvconf/resolv.conf.d/base'
 
 if os.uname()[0].lower() == 'freebsd':
     INTERFACE_LABELS = {"public": "xn0",
@@ -458,25 +460,64 @@ def update_files(update_files, remove_files=None):
     move_files(update_files, remove_files)
 
 
-def update_resolvconf():
-    if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off':
-        logging.info("'resolvconf' has been turned off for system Environment")
+def _update_resolvconf_base():
+    if os.path.isfile('/etc/network/interfaces'):
+        fyl = open('/etc/network/interfaces', 'r')
+        dat = fyl.readlines()
+        fyl.close()
 
-    if utils.is_system_command("resolvconf"):
+        nameserver = []
+        for line in dat:
+            entry = re.findall(r'\s*dns-nameservers.*', line)
+            if entry != []:
+                nameserver.extend(entry[0].split()[1:])
+
+        nameserver = list(set(nameserver))
+        nameserver = ["nameserver %s" % dns for dns in nameserver]
+        logging.info("'resolvconf' base config updated")
+        fyl = open(RESOLVCONF_BASE, 'w')
+        fyl.write("\n".join(nameserver))
+        fyl.close()
+
+
+def _prepare_resolvconf_config():
+    if not os.path.isdir("/run/resolvconf"):
+        if not os.path.isdir("/run"):
+            os.mkdir("/run")
+        os.mkdir("/run/resolvconf")
+    os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
+    open(RESOLVCONF_RESOLV_CONF_FILE, 'a').close()
+    os.symlink(RESOLVCONF_RESOLV_CONF_FILE, RESOLV_CONF_FILE)
+    _update_resolvconf_base()
+    logging.info("resolvcconf symlinked and pre-requisite completed")
+
+
+def _update_if_resolvconf_in_path():
+    for path in os.getenv('PATH').split(':'):
+        resolvconf_path = os.path.join(path, 'resolvconf')
+        if os.path.isfile(resolvconf_path) and os.path.isfile(RESOLVCONF_BASE):
+            os.file.copy(RESOLVCONF_BASE, RESOLVCONF_RESOLV_CONF_FILE)
+            return True
+    return False
+
+
+def update_resolvconf():
+    try:
+        if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off':
+            logging.info("'resolvconf' has been turned off for system Environment")
+
         if os.path.islink(RESOLV_CONF_FILE):
             logging.info("%s is already a link" % RESOLV_CONF_FILE)
         else:
             # getting config files and symlinks as per required
-            os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
-            open(RESOLVCONF_RESOLV_CONF_FILE, 'a').close()
-            os.symlink(RESOLVCONF_RESOLV_CONF_FILE, RESOLV_CONF_FILE)
+            _prepare_resolvconf_config()
 
         # updating the resolv.conf as per dns-nameservers
-        retVal = utils.run_without_error("resolvconf -u")
-        logging.info("'resolvconf' completed with status code %s" % retVal)
-        return retVal
-
-    else:
+        if subprocess.call(["resolvconf", "-u"]) == 0:
+            logging.info("'resolvconf' completed")
+            return True
+        return _update_if_resolvconf_in_path
+    except:
         logging.info("'resolvconf' not configured")
-
-    return False
+        os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
+        return False
