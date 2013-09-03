@@ -519,7 +519,9 @@ def update_resolvconf():
         if subprocess.call(["resolvconf", "-u"]) == 0:
             logging.info("'resolvconf' completed")
             return True
-        return _update_if_resolvconf_in_path
+
+        return _update_if_resolvconf_in_path()
+
     except:
         logging.info("'resolvconf' not configured")
         os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
