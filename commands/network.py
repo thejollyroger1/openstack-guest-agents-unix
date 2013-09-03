@@ -43,6 +43,7 @@ from cStringIO import StringIO
 import fcntl
 import logging
 import os
+import shutil
 import subprocess
 import platform
 import pyxenstore
@@ -489,14 +490,16 @@ def _prepare_resolvconf_config():
     open(RESOLVCONF_RESOLV_CONF_FILE, 'a').close()
     os.symlink(RESOLVCONF_RESOLV_CONF_FILE, RESOLV_CONF_FILE)
     _update_resolvconf_base()
-    logging.info("resolvcconf symlinked and pre-requisite completed")
+    logging.info("resolvconf symlinked and pre-requisite completed")
 
 
 def _update_if_resolvconf_in_path():
     for path in os.getenv('PATH').split(':'):
         resolvconf_path = os.path.join(path, 'resolvconf')
         if os.path.isfile(resolvconf_path) and os.path.isfile(RESOLVCONF_BASE):
-            os.file.copy(RESOLVCONF_BASE, RESOLVCONF_RESOLV_CONF_FILE)
+            shutil.copy(RESOLVCONF_BASE, RESOLVCONF_RESOLV_CONF_FILE)
+            logging.info("Resolvconf BASE config copied over resolvconf/resolv"
+                         ".conf to avoid cross-platform bin created errors.")
             return True
     return False
 
