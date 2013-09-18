@@ -71,7 +71,10 @@ def create_configfile(IPv4, admin_pass):
 
 def load_configurations():
     config = ConfigParser.RawConfigParser()
-    config.read(os.path.join(os.getcwd(), "server_configurations.cfg"))
+    nova_agent_configuration = os.getenv("NOVA_AGENT_CONFIGURATION")
+    if not nova_agent_configuration:
+        nova_agent_configuration = os.path.join(os.getcwd(), "server_configurations.cfg")
+    config.read(nova_agent_configuration)
     env = config.get("environment", "name")
     return {
         "tenant_id": config.get(env, "tenant_id"),
