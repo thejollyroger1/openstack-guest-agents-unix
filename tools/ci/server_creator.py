@@ -13,7 +13,7 @@ import time
 import ConfigParser
 import logging
 import os
-
+import sys
 
 def _http_requests_json(url, headers={}, body=None):
     """ General function for completing HTTP Requests over JSON. """
@@ -70,6 +70,8 @@ def create_configfile(IPv4, admin_pass):
 
 
 def load_configurations():
+    image_name = sys.argv[1]
+    print image_name
     config = ConfigParser.RawConfigParser()
     nova_agent_configuration = os.getenv("NOVA_AGENT_CONFIGURATION")
     if not nova_agent_configuration:
@@ -82,9 +84,9 @@ def load_configurations():
         "api_key": config.get(env, "api_key"),
         "identity_url": config.get(env, "identity_url"),
         "cloud_url": config.get(env, "cloud_url"),
-        "image_id": config.get(env, "image_id"),
+        "image_id": config.get(env, image_name),
         "flavor_id": config.get(env, "flavor_id"),
-        "server_name": config.get(env, "server_name")
+        "server_name": "testagent"+image_name   
     }
 
 
