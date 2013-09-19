@@ -13,7 +13,7 @@ import time
 import ConfigParser
 import logging
 import os
-import sys
+
 
 def _http_requests_json(url, headers={}, body=None):
     """ General function for completing HTTP Requests over JSON. """
@@ -70,7 +70,9 @@ def create_configfile(IPv4, admin_pass):
 
 
 def load_configurations():
-    image_name = sys.argv[1]
+    image_name = os.getenv("IMAGE_NAME")
+    if not image_name:
+        image_name = "CentOS60"
     print image_name
     config = ConfigParser.RawConfigParser()
     nova_agent_configuration = os.getenv("NOVA_AGENT_CONFIGURATION")
@@ -86,7 +88,7 @@ def load_configurations():
         "cloud_url": config.get(env, "cloud_url"),
         "image_id": config.get(env, image_name),
         "flavor_id": config.get(env, "flavor_id"),
-        "server_name": "testagent"+image_name   
+        "server_name": "testagent"+image_name
     }
 
 
