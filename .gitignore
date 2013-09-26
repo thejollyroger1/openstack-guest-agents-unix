@@ -3,6 +3,7 @@
 *.swp
 *.un~
 *.suo
+*.cfg
 bin
 obj
 _[Rr]e{Ss]harper*

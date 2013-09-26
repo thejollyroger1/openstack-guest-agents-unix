@@ -124,5 +124,3 @@ def create_server(initial_wait=120):
     print("IPv4 : %s" % ipv4)
     return create_configfile(ipv4, admin_pass)
 
-
-create_server()
