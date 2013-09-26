@@ -79,7 +79,9 @@ def load_configurations():
     if not nova_agent_configuration:
         nova_agent_configuration = os.path.join(os.getcwd(), "server_configurations.cfg")
     config.read(nova_agent_configuration)
-    env = config.get("environment", "name")
+    env = os.getenv("ENV_NAME")
+    if not env:
+        env = config.get("environment", "name")
     return {
         "tenant_id": config.get(env, "tenant_id"),
         "username": config.get(env, "username"),
