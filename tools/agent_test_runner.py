@@ -9,6 +9,7 @@ from fabric.operations import put
 
 branch = "tests"
 
+
 def minion():
     print(">>>>>>> %s" % run('uname -s'))
 
@@ -66,6 +67,7 @@ def install_agent_and_run_tests():
     fabric.operations.reboot(120)
     run_tests()
 
+
 def create_agent_tar():
     install_python_and_curl()
     run("curl -Lk https://raw.github.com/rackerlabs/openstack-guest-agents-unix/%s/tools/nova-agent-builder.sh | bash" % branch)
@@ -74,6 +76,7 @@ def create_agent_tar():
 def install_agent_from_local_tar():
     run("curl -OkL https://raw.github.com/rackerlabs/openstack-guest-agents-unix/%s/tests/functional/install_agent.py" % branch)
     run("python install_agent.py --local /root/nova-agent/artifacts/nova-agent-FreeBSD-amd64-0.0.1.38.tar.gz")
+
 
 def load_config():
     config = RawConfigParser()
