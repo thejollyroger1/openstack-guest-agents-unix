@@ -100,6 +100,16 @@ NETMASK_TO_PREFIXLEN = {
 }
 
 
+class CustomErrorResolvConfBase(Exception):
+
+    def __init__(self, message):
+        self.message = repr(message)
+        logging.error("'resolvconf' config got error: %s" % self.message)
+
+    def __str__(self):
+        return self.message
+
+
 class NetworkCommands(commands.CommandBase):
 
     def __init__(self, *args, **kwargs):
@@ -479,6 +489,9 @@ def _update_resolvconf_base():
         fyl = open(RESOLVCONF_BASE, 'w')
         fyl.write("\n".join(nameserver))
         fyl.close()
+    else:
+        raise CustomErrorResolvConfBase("Error while updating resolvconf base"
+                                        "config file with nameservers.")
 
 
 def _prepare_resolvconf_config():
