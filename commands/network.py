@@ -471,30 +471,44 @@ def update_files(update_files, remove_files=None):
     move_files(update_files, remove_files)
 
 
-def _update_resolvconf_base():
-    if os.path.isfile('/etc/network/interfaces'):
+def _mkdir_p(pathname):
+    if not os.path.exists(pathname):
+        basedir, _ = os.path.split(pathname)
+        if not os.path.exists(basedir):
+            _mkdir_p(basedir)
+            logging.info("creating directory: %s" % pathname)
+        os.mkdir(pathname)
+
+
+def _update_resolvconf_base(nameservers):
+    if nameservers != None:
+        nameservers = ["nameserver %s" % dns for dns in nameservers]
+    elif os.path.isfile('/etc/network/interfaces'):
         fyl = open('/etc/network/interfaces', 'r')
         dat = fyl.readlines()
         fyl.close()
 
-        nameserver = []
+        nameservers = []
         for line in dat:
             entry = re.findall(r'\s*dns-nameservers.*', line)
             if entry != []:
-                nameserver.extend(entry[0].split()[1:])
+                nameservers.extend(entry[0].split()[1:])
 
-        nameserver = list(set(nameserver))
-        nameserver = ["nameserver %s" % dns for dns in nameserver]
-        logging.info("'resolvconf' base config updated")
-        fyl = open(RESOLVCONF_BASE, 'w')
-        fyl.write("\n".join(nameserver))
-        fyl.close()
+        nameservers = list(set(nameservers))
+        nameservers = ["nameservers %s" % dns for dns in nameservers]
     else:
         raise CustomErrorResolvConfBase("Error while updating resolvconf base"
                                         "config file with nameservers.")
 
+    basedir, _ = os.path.split(RESOLVCONF_BASE)
+    _mkdir_p(basedir)
+    fyl = open(RESOLVCONF_BASE, 'w')
+    fyl.write("\n".join(nameservers))
+    fyl.close()
+    logging.info("'resolvconf' base config updated with %s" % nameservers)
 
-def _prepare_resolvconf_config():
+
+def _prepare_resolvconf_config(nameservers):
     if not os.path.isdir("/run/resolvconf"):
         if not os.path.isdir("/run"):
             os.mkdir("/run")
@@ -502,7 +516,7 @@ def _prepare_resolvconf_config():
     os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
     open(RESOLVCONF_RESOLV_CONF_FILE, 'a').close()
     os.symlink(RESOLVCONF_RESOLV_CONF_FILE, RESOLV_CONF_FILE)
-    _update_resolvconf_base()
+    _update_resolvconf_base(nameservers)
     logging.info("resolvconf symlinked and pre-requisite completed")
 
 
@@ -517,16 +531,16 @@ def _update_if_resolvconf_in_path():
     return False
 
 
-def update_resolvconf():
+def update_resolvconf(nameservers=None):
     try:
         if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off':
-            logging.info("'resolvconf' has been turned off for system Environment")
+            logging.info("'resolvconf' has been turned off for system Env")
 
         if os.path.islink(RESOLV_CONF_FILE):
             logging.info("%s is already a link" % RESOLV_CONF_FILE)
         else:
             # getting config files and symlinks as per required
-            _prepare_resolvconf_config()
+            _prepare_resolvconf_config(nameservers)
 
         # updating the resolv.conf as per dns-nameservers
         if subprocess.call(["resolvconf", "-u"]) == 0:
@@ -535,7 +549,7 @@ def update_resolvconf():
 
         return _update_if_resolvconf_in_path()
 
-    except:
-        logging.info("'resolvconf' not configured")
+    except Exception, e:
+        logging.info("'resolvconf' not configured.\nError: %s" % repr(e))
         os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
         return False
