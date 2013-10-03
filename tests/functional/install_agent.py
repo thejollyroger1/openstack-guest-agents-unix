@@ -113,8 +113,7 @@ class Nova:
 
 
         if 'local' in kwargs:
-            tar_base_path = ''
-            tar_name = ''
+            tar_base_path, tar_name = os.path.split(kwargs['local'])
         else:
             tar_base_path = "/root/nova-agent"
             tar_path = "%s/%s" % (tar_base_path, tar_name)
@@ -146,15 +145,15 @@ def install_nova_agent():
     based tar file, using command line switches.
     """
     if len(sys.argv) == 2:
-        config_key = sys.argv[0]
+        config_key = sys.argv[1]
         if config_key == '--version':
-            Nova().agent_install(version=sys.argv[1])
+            Nova().agent_install(version=sys.argv[2])
             return
         elif config_key == '--url':
-            Nova().agent_install(url=sys.argv[1])
+            Nova().agent_install(url=sys.argv[2])
             return
         elif config_key == '--local':
-            Nova().agent_install(local=sys.argv[1])
+            Nova().agent_install(local=sys.argv[2])
             return
 
     Nova().agent_install(version=latest_github_tag())
