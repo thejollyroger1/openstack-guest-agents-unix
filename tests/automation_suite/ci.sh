@@ -1,27 +1,36 @@
 #!bash
 #####
-# $ ./ci.sh <distro_type>
-# $ ./ci.sh <distro_type> <branch>
+# $ ./ci.sh # picks defaults: /etc/nova-agent.cfg for Linux off master branch
+# $ ./ci.sh <path-to-cfg> # picks given CFG
+# $ ./ci.sh <path-to-cfg> <distro_type> # picks given CFG and DISTRO
+# $ ./ci.sh <path-to-cfg> <distro_type> <branch> # picks all given config
 # on specifying branch, distro is mandatory
 # distro effect only differs if value send is "bsd"
 #####
 
 if [ "$1" == "" ]; then
-  DISTRO="rhel,deb,gentoo,arch,suse"
+  CFG="/etc/nova-agent.cfg"
 else
-  DISTRO="$1"
+  CFG="$1"
 fi
 
 if [ "$2" == "" ]; then
-  NOVA_AGENT_BRANCH="master"
+  DISTRO="rhel,deb,gentoo,arch,suse"
 else
-  NOVA_AGENT_BRANCH="$2"
+  DISTRO="$2"
 fi
 
-NOVA_AGENT_TEST_BASEDIR="/tmp/nova-agent-test-runner/${NOVA_AGENT_BRANCH}"
+if [ "$3" == "" ]; then
+  NOVA_AGENT_BRANCH="master"
+else
+  NOVA_AGENT_BRANCH="$3"
+fi
+
 NOVA_AGENT_LOCAL_BASE="/tmp/nova-agent/${NOVA_AGENT_BRANCH}"
-mkdir -p "${NOVA_AGENT_TEST_BASEDIR}/tools"
+NOVA_AGENT_TEST_BASEDIR="/tmp/nova-agent-test-runner/${NOVA_AGENT_BRANCH}"
 mkdir -p $NOVA_AGENT_LOCAL_BASE
+mkdir -p "${NOVA_AGENT_TEST_BASEDIR}/tools"
+cp -f $CFG "${NOVA_AGENT_TEST_BASEDIR}/tools/server_configurations.cfg"
 
 RELEASE_TAG=`curl -skL https://api.github.com/repos/rackerlabs/openstack-guest-agents-unix/tags | grep '"name":' | head -1 | awk -F'"' '{print $4}' | sed 's/^v//'`
 cd $NOVA_AGENT_LOCAL_BASE
@@ -56,4 +65,4 @@ if [[ $IF_FAB == '1' ]]; then
 fi
 
 cd $NOVA_AGENT_TEST_BASEDIR
-python "./agent_test_runner.py"
+NOVA_AGENT_CONFIGURATION="${NOVA_AGENT_TEST_BASEDIR}/tools/server_configurations.cfg" python "./agent_test_runner.py"
