@@ -6,65 +6,16 @@ from ConfigParser import RawConfigParser
 import fabric
 from fabric.api import env, run
 from fabric.operations import put
-import server_creator
+import tools.server_creator
 
 
-def install_python_and_curl():
-    #Redhat Releases
-    run("if [ -f /etc/redhat-release ]; "
-        "then IF_PYTHON=`which python > /dev/null ; echo $?` ; if [[ $IF_PYTHON == '1' ]]; "
-        "then apt-get -y install python; fi;"
-        "IF_PYTHON=`which curl > /dev/null ; echo $?` ; if [[ $IF_PYTHON == '1' ]]; "
-        "then apt-get -y install curl; fi fi")
+branch = os.getenv("NOVA_AGENT_BRANCH")
+if not branch:
+    branch = "master"
 
-    #Open-SuSE image
-    run("if [ -f /etc/SuSE-release ]; "
-        "then IF_PYTHON=`which python > /dev/null ; echo $?` ; if [[ $IF_PYTHON == '1' ]]; "
-        "then zypper install -y python; fi;"
-        "IF_PYTHON=`which curl > /dev/null ; echo $?` ; if [[ $IF_PYTHON == '1' ]]; "
-        "then zypper install -y curl; fi fi")
-
-    #Debian images
-    run("if [ -f /etc/debian_version ]; "
-        "then IF_PYTHON=`which python > /dev/null ; echo $?` ; if [[ $IF_PYTHON == '1' ]]; "
-        "then apt-get install -y python; fi;"
-        "IF_PYTHON=`which curl > /dev/null ; echo $?` ; if [[ $IF_PYTHON == '1' ]]; "
-        "then apt-get install -y curl; fi fi")
-
-    #FreeBSD images
-    run("if [ `uname -s` == 'FreeBSD' ]; "
-        "then IF_PYTHON=`which python > /dev/null ; echo $?` ; "
-        "if [[ $IF_PYTHON == '1' ]]; then pkg_add -r python; fi;"
-        "IF_BASH=`which bash > /dev/null ; echo $?` ; "
-        "if [[ $IF_BASH == '1' ]]; then pkg_add -r bash; fi;"
-        "IF_PYTHON=`which curl > /dev/null ; echo $?` ; "
-        "if [[ $IF_PYTHON == '1' ]]; then pkg_add -r curl; fi "
-        "fi")
-
-
-def install_agent():
-    run(
-        "curl -OkL https://raw.github.com/rackerlabs"
-        "/openstack-guest-agents-unix/master/tests/functional/install_agent.py")
-    run("python install_agent.py")
-    run("rm -rf install_agent.py")
-
-
-def run_tests():
-    run("curl -OkL https://raw.github.com/rackerlabs/"
-        "openstack-guest-agents-unix/master/tests/functional/agent_tester.py")
-    run("python agent_tester.py")
-    run("rm -rf agent_tester.py")
-
-
-def install_agent_and_run_tests():
-    load_config()
-    install_python_and_curl()
-    install_agent()
-    print("Going for reboot")
-    time.sleep(5)
-    fabric.operations.reboot(120)
-    run_tests()
+local_base = os.getenv("NOVA_AGENT_LOCALBASE")
+if not local_base:
+    local_base = os.path.join("/tmp", "nova-agent", branch)
 
 
 def load_config():
@@ -73,10 +24,74 @@ def load_config():
     config.read(os.path.join(os.getcwd(), fabfile))
     hosts = config.get('credentials', 'ipv4')
     user = config.get('credentials', 'username')
-    print user
-    print hosts
+    print(user, hosts)
     env.host_string = user + "@" + hosts
     env.password = config.get('credentials', 'adminpass')
 
 
-install_agent_and_run_tests()
+def download_http(url, local_path):
+    open_link = urllib2.urlopen(url)
+    with open(local_path, "wb") as local_file:
+            local_file.write(open_link.read())
+
+
+def download_ci_scripts():
+    if not os.path.exists(local_base):
+        os.mkdir(local_base)
+
+    url_base = "https://raw.github.com/rackerlabs/openstack-guest-agents-unix"
+    url_base = "%s/%s" % (url_base, branch)
+
+    url_paths = ["tests/automation_suite/tools/install_prerequisite.sh",
+                 "tests/automation_suite/tools/install_agent.py",
+                 "tests/automation_suite/agent_tester.py"]
+
+    for url_path in url_paths:
+        url = "%s/%s" % (url_base, url_path)
+        local_path = os.path.join(local_base, os.path.split(url_path)[1])
+        download_http(url, local_path)
+
+
+def prerequisite():
+    install_prerequisite = os.path.join(local_base, "install_prerequisite.sh")
+    put("./tools/install_prerequisite.sh", install_prerequisite)
+    try:
+        run("bash %s %s" % (install_prerequisite, "python"))
+    except:
+        env.shell = "/bin/csh -c"
+        run("/bin/csh %s %s %s" % (install_prerequisite, "python", "bash"))
+        env.shell = "bash -l -c"
+
+
+def run_n_remove(filename, run_as):
+    _path_dir, _path_fyl = local_base, os.path.join(local_base, filename)
+
+    run("mkdir -p %s" % _path_dir)
+    put(_path_fyl, _path_fyl)
+
+    run("%s %s" % (run_as, _path_fyl))
+    run("rm -f %s" % _path_fyl)
+
+
+def install_agent():
+    run_n_remove("install_agent.py", "python")
+
+
+def run_tests():
+    run_n_remove("agent_tester.py", "python")
+
+
+def install_agent_and_run_tests():
+    load_config()
+    #download_ci_scripts()
+    prerequisite()
+    install_agent()
+    print("Going for reboot")
+    time.sleep(5)
+    fabric.operations.reboot(120)
+    run_tests()
+
+
+load_config()
+if __name__ == "__main__":
+    install_agent_and_run_tests()
