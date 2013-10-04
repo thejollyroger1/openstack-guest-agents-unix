@@ -6,7 +6,7 @@ from ConfigParser import RawConfigParser
 import fabric
 from fabric.api import env, run
 from fabric.operations import put
-import tools.server_creator
+from tools import server_creator
 
 
 branch = os.getenv("NOVA_AGENT_BRANCH")

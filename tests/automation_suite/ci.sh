@@ -37,6 +37,23 @@ cd $NOVA_AGENT_TEST_BASEDIR
 
 echo "https://raw.github.com/rackerlabs/openstack-guest-agents-unix/${NOVA_AGENT_BRANCH}/tests/automation_suite/agent_test_runner.py"
 curl -C - -sLk -o "${NOVA_AGENT_TEST_BASEDIR}/agent_test_runner.py" "https://raw.github.com/rackerlabs/openstack-guest-agents-unix/${NOVA_AGENT_BRANCH}/tests/automation_suite/agent_test_runner.py"
+touch "${NOVA_AGENT_TEST_BASEDIR}/tools/__init__.py"
 curl -C - -sLk -o "${NOVA_AGENT_TEST_BASEDIR}/tools/server_creator.py" "https://raw.github.com/rackerlabs/openstack-guest-agents-unix/${NOVA_AGENT_BRANCH}/tests/automation_suite/tools/server_creator.py"
 
-python "${NOVA_AGENT_TEST_BASEDIR}/agent_test_runner.py"
+IF_FAB=`which fab > /dev/null ; echo $?`
+IF_PIP=`which pip > /dev/null ; echo $?`
+IF_EASYINSTALL=`which easy_install > /dev/null ; echo $?`
+if [[ $IF_FAB == '1' ]]; then
+  if [[ $IF_PIP != '1' ]]; then
+    pip install fabric
+  elif [[ $IF_EASYINSTALL != '1' ]]; then
+    easy_install pip
+    pip install fabric
+  else
+    echo "Install 'Fabric' python module. No pip or easy_install found."
+    exit 127
+  fi
+fi
+
+cd $NOVA_AGENT_TEST_BASEDIR
+python "./agent_test_runner.py"
