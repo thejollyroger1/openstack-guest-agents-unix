@@ -54,11 +54,14 @@ def download_ci_scripts():
 
 def prerequisite():
     install_prerequisite = os.path.join(local_base, "install_prerequisite.sh")
-    put("./tools/install_prerequisite.sh", install_prerequisite)
     try:
+        run("mkdir -p %s" % local_base)
+        put(install_prerequisite, install_prerequisite)
         run("bash %s %s" % (install_prerequisite, "python"))
     except:
         env.shell = "/bin/csh -c"
+        run("mkdir -p %s" % local_base)
+        put(install_prerequisite, install_prerequisite)
         run("/bin/csh %s %s %s" % (install_prerequisite, "python", "bash"))
         env.shell = "bash -l -c"
 

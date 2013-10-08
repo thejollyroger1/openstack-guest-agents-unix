@@ -11,8 +11,8 @@ import urllib2
 import json
 import time
 import ConfigParser
-import logging
 import os
+import sys
 
 
 def _http_requests_json(url, headers={}, body=None):
@@ -48,7 +48,7 @@ def wait_server_to_active(url, auth_token, wait=20, timeout=600):
     print("Server status: %s" % status)
 
     if str(status) == "BUILD" and wait < timeout:
-        wait += wait/2
+        wait += wait / 2
         return wait_server_to_active(url, auth_token, wait, timeout)
 
     return resp
@@ -70,28 +70,31 @@ def create_configfile(IPv4, admin_pass):
 
 
 def load_configurations():
-    image_name = os.getenv("IMAGE_NAME")
-    if not image_name:
-        image_name = "CentOS60"
-    print image_name
-    config = ConfigParser.RawConfigParser()
-    nova_agent_configuration = os.getenv("NOVA_AGENT_CONFIGURATION")
-    if not nova_agent_configuration:
-        nova_agent_configuration = os.path.join(os.getcwd(), "server_configurations.cfg")
-    config.read(nova_agent_configuration)
-    env = os.getenv("ENV_NAME")
-    if not env:
-        env = config.get("environment", "name")
-    return {
-        "tenant_id": config.get(env, "tenant_id"),
-        "username": config.get(env, "username"),
-        "api_key": config.get(env, "api_key"),
-        "identity_url": config.get(env, "identity_url"),
-        "cloud_url": config.get(env, "cloud_url"),
-        "image_id": config.get(env, image_name),
-        "flavor_id": config.get(env, "flavor_id"),
-        "server_name": "testagent"+image_name
-    }
+    try:
+        image_name = os.getenv("IMAGE_NAME")
+
+        print image_name
+        config = ConfigParser.RawConfigParser()
+        nova_agent_configuration = os.getenv("NOVA_AGENT_CONFIGURATION")
+        if not nova_agent_configuration:
+            nova_agent_configuration = os.path.join(os.getcwd(), "server_configurations.cfg")
+        config.read(nova_agent_configuration)
+        env = os.getenv("ENV_NAME")
+        if not env:
+            env = config.get("environment", "name")
+        return {
+            "tenant_id": config.get(env, "tenant_id"),
+            "username": config.get(env, "username"),
+            "api_key": config.get(env, "api_key"),
+            "identity_url": config.get(env, "identity_url"),
+            "cloud_url": config.get(env, "cloud_url"),
+            "image_id": config.get(env, image_name),
+            "flavor_id": config.get(env, "flavor_id"),
+            "server_name": "testagent" + image_name
+        }
+    except Exception, e:
+        print(e)
+        sys.exit(1)
 
 
 def create_server(initial_wait=120):
