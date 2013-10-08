@@ -61,7 +61,7 @@ def install_uuid():
     """ Installing UUID package for Testing purpose. """
     version = "1.30"
     base_path = "/tmp/uuid"
-    if os.path.exists(path):
+    if os.path.exists(base_path):
         run_me_right("%s stop" % base_path)
 
     tar_name = "uuid-%s.tar.gz" % (version)
@@ -146,15 +146,15 @@ def install_nova_agent():
     based tar file, using command line switches.
     """
     if len(sys.argv) == 2:
-        config_key = sys.argv[0]
+        config_key = sys.argv[1]
         if config_key == '--version':
-            Nova().agent_install(version=sys.argv[1])
+            Nova().agent_install(version=sys.argv[2])
             return
         elif config_key == '--url':
-            Nova().agent_install(url=sys.argv[1])
+            Nova().agent_install(url=sys.argv[2])
             return
         elif config_key == '--local':
-            Nova().agent_install(local=sys.argv[1])
+            Nova().agent_install(local=sys.argv[2])
             return
 
     Nova().agent_install(version=latest_github_tag())
