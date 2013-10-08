@@ -117,7 +117,7 @@ def create_server(initial_wait=120):
     admin_pass = resp["server"]["adminPass"]
     server_id = resp["server"]["id"]
     server_url = resp["server"]["links"][0]["href"]
-    print("Server Details\nID:%s\nURL: %s" % (server_url, server_id))
+    print("Server Details\nURL:%s\nID: %s" % (server_url, server_id))
     print("Initial wait time to get server status: %s sec" % initial_wait)
 
     time.sleep(initial_wait)

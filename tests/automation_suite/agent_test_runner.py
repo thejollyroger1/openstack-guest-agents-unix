@@ -29,29 +29,6 @@ def load_config():
     env.password = config.get('credentials', 'adminpass')
 
 
-def download_http(url, local_path):
-    open_link = urllib2.urlopen(url)
-    with open(local_path, "wb") as local_file:
-            local_file.write(open_link.read())
-
-
-def download_ci_scripts():
-    if not os.path.exists(local_base):
-        os.mkdir(local_base)
-
-    url_base = "https://raw.github.com/rackerlabs/openstack-guest-agents-unix"
-    url_base = "%s/%s" % (url_base, branch)
-
-    url_paths = ["tests/automation_suite/tools/install_prerequisite.sh",
-                 "tests/automation_suite/tools/install_agent.py",
-                 "tests/automation_suite/agent_tester.py"]
-
-    for url_path in url_paths:
-        url = "%s/%s" % (url_base, url_path)
-        local_path = os.path.join(local_base, os.path.split(url_path)[1])
-        download_http(url, local_path)
-
-
 def prerequisite():
     install_prerequisite = os.path.join(local_base, "install_prerequisite.sh")
     try:
@@ -86,7 +63,6 @@ def run_tests():
 
 def install_agent_and_run_tests():
     load_config()
-    #download_ci_scripts()
     prerequisite()
     install_agent()
     print("Going for reboot")
