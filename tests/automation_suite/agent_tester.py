@@ -87,7 +87,7 @@ def _call_agent_xenstore(key, val):
     print(key)
     print(val)
     subprocess.call(["xenstore-write", "data/host/%s" % uuid1, '{"name":"%s","value":"%s"}' % (key, val)])
-    time.sleep(8)
+    time.sleep(15)
     xen_read = subprocess.call(["xenstore-read", "data/guest/%s" % uuid1])
     return xen_read
 
