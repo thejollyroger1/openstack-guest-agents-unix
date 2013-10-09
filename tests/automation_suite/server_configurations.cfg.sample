@@ -1,0 +1,22 @@
+[environment]
+name = justiceleague
+
+[justiceleague]
+tenant_id = 123456
+username = superman
+api_key = 12345678910
+identity_url = https://identity.api.justiceleague.com/v2.0/tokens
+cloud_url = https://superman.api.justiceleague.com/v2/
+image_id = a0bc1dde-2f34-567g-h8ij-k90l1bc2ea3d
+flavor_id = 2
+CentOS64 = a0bc1dde-2f34-567g-h8ij-k90l1bc2ea3d
+Debian7 = 12345a6e-7e89-0b1f-23f4-b567e89f0c1a
+
+[avengers]
+tenant_id = 567890
+username = thor
+api_key = 01987654321
+identity_url = https://identity.api.avengers.com/v2.0/tokens
+cloud_url = https://thor.api.avengers.com/v2/
+image_id = a0bc1dde-2f34-567g-h8ij-k90l1bc2ea3d
+flavor_id = 2
