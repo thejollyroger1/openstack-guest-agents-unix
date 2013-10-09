@@ -71,15 +71,15 @@ def create_configfile(IPv4, admin_pass):
 
 def load_configurations():
     try:
-        image_name = os.getenv("IMAGE_NAME")
+        image_name = os.getenv("NOVA_AGENT_DISTRO")
 
-        print image_name
+        print("Distro used %s" % image_name)
         config = ConfigParser.RawConfigParser()
         nova_agent_configuration = os.getenv("NOVA_AGENT_CONFIGURATION")
         if not nova_agent_configuration:
             nova_agent_configuration = os.path.join(os.getcwd(), "server_configurations.cfg")
         config.read(nova_agent_configuration)
-        env = os.getenv("ENV_NAME")
+        env = os.getenv("NOVA_AGENT_ENV_NAME")
         if not env:
             env = config.get("environment", "name")
         return {

@@ -1,23 +1,35 @@
 #!bash
 #####
+## SWITCH passing here will changed to FLAG instead of INDEX(current)
 # $ ./ci.sh # picks defaults: /etc/nova-agent.cfg for Linux off master branch
-# $ ./ci.sh <path-to-cfg> # picks given CFG
-# $ ./ci.sh <path-to-cfg> <distro_type> # picks given CFG and DISTRO
-# $ ./ci.sh <path-to-cfg> <distro_type> <branch> # picks all given config
+# # picks given NOVA_AGENT_CFG
+# # and defaults to distro:Debian7, branch:master, env:prod
+# # $ ./ci.sh <path-to-cfg>
+#
+# # picks given NOVA_AGENT_CFG and NOVA_AGENT_DISTRO
+# # and defaults to branch:master, env:prod
+# $ ./ci.sh <path-to-cfg> <distro_type>
+#
+# # picks given NOVA_AGENT_CFG and NOVA_AGENT_DISTRO and NOVA_AGENT_BRANCH
+# # and defaults to env:prod
+# $ ./ci.sh <path-to-cfg> <distro_type> <branch>
+#
+# # picks given NOVA_AGENT_CFG and NOVA_AGENT_DISTRO and NOVA_AGENT_BRANCH and NOVA_AGENT_ENV_NAME
+# $ ./ci.sh <path-to-cfg> <distro_type> <branch> <rax_env>
 # on specifying branch, distro is mandatory
 # distro effect only differs if value send is "bsd"
 #####
 
 if [ "$1" == "" ]; then
-  CFG="/etc/nova-agent.cfg"
+  NOVA_AGENT_CFG="/etc/nova-agent.cfg"
 else
-  CFG="$1"
+  NOVA_AGENT_CFG="$1"
 fi
 
 if [ "$2" == "" ]; then
-  DISTRO="rhel,deb,gentoo,arch,suse"
+  NOVA_AGENT_DISTRO="Debian7"
 else
-  DISTRO="$2"
+  NOVA_AGENT_DISTRO="$2"
 fi
 
 if [ "$3" == "" ]; then
@@ -26,15 +38,22 @@ else
   NOVA_AGENT_BRANCH="$3"
 fi
 
+if [ "$4" == "" ]; then
+  NOVA_AGENT_ENV_NAME="prod"
+else
+  NOVA_AGENT_ENV_NAME="$4"
+fi
+
 NOVA_AGENT_LOCAL_BASE="/tmp/nova-agent/${NOVA_AGENT_BRANCH}"
 NOVA_AGENT_TEST_BASEDIR="/tmp/nova-agent-test-runner/${NOVA_AGENT_BRANCH}"
 mkdir -p $NOVA_AGENT_LOCAL_BASE
 mkdir -p "${NOVA_AGENT_TEST_BASEDIR}/tools"
-cp -f $CFG "${NOVA_AGENT_TEST_BASEDIR}/tools/server_configurations.cfg"
+cp -f $NOVA_AGENT_CFG "${NOVA_AGENT_TEST_BASEDIR}/tools/server_configurations.cfg"
 
 RELEASE_TAG=`curl -skL https://api.github.com/repos/rackerlabs/openstack-guest-agents-unix/tags | grep '"name":' | head -1 | awk -F'"' '{print $4}' | sed 's/^v//'`
+
 cd $NOVA_AGENT_LOCAL_BASE
-if [ $DISTRO == 'bsd' ]; then
+if [ $NOVA_AGENT_DISTRO == 'bsd' ]; then
   curl -C - -sLkO "https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/v${RELEASE_TAG}/nova-agent-FreeBSD-amd64-${RELEASE_TAG}.tar.gz"
 else
   curl -C - -sLkO "https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/v${RELEASE_TAG}/nova-agent-Linux-x86_64-${RELEASE_TAG}.tar.gz"
@@ -65,4 +84,4 @@ if [[ $IF_FAB == '1' ]]; then
 fi
 
 cd $NOVA_AGENT_TEST_BASEDIR
-NOVA_AGENT_CONFIGURATION="${NOVA_AGENT_TEST_BASEDIR}/tools/server_configurations.cfg" python "./agent_test_runner.py"
+NOVA_AGENT_ENV_NAME="${NOVA_AGENT_ENV_NAME}" NOVA_AGENT_DISTRO="${NOVA_AGENT_DISTRO}" NOVA_AGENT_BRANCH="${NOVA_AGENT_BRANCH}" NOVA_AGENT_CONFIGURATION="${NOVA_AGENT_TEST_BASEDIR}/tools/server_configurations.cfg" python "./agent_test_runner.py"
