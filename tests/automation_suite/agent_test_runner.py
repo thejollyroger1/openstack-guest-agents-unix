@@ -37,7 +37,6 @@ def prerequisite():
         put(install_prerequisite, install_prerequisite)
         bintar_path = os.path.join(local_base, "nova-agent-Linux-x86_64-0.0.1.38.tar.gz")
         put(bintar_path, bintar_path)
-        run("ls -la /tmp/nova-agent/master")
         run("/usr/bin/env bash %s %s" % (install_prerequisite, "python"))
     except:
         env.shell = "/bin/csh -c"
