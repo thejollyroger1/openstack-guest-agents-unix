@@ -44,6 +44,19 @@ else
   NOVA_AGENT_ENV_NAME="$4"
 fi
 
+banner(){
+  echo "******************************************************"
+  echo "Test Metadata:"
+  echo ""
+  echo "  Configuration File:  ${NOVA_AGENT_CFG}"
+  echo "  Distro Tested:       ${NOVA_AGENT_DISTRO}"
+  echo "  Git Branch:          ${NOVA_AGENT_BRANCH}"
+  echo "  Run on Environment:  ${NOVA_AGENT_ENV_NAME}"
+  echo "******************************************************"
+}
+
+banner
+
 NOVA_AGENT_LOCAL_BASE="/tmp/nova-agent/${NOVA_AGENT_BRANCH}"
 NOVA_AGENT_TEST_BASEDIR="/tmp/nova-agent-test-runner/${NOVA_AGENT_BRANCH}"
 mkdir -p $NOVA_AGENT_LOCAL_BASE
