@@ -89,7 +89,6 @@ def _call_agent_xenstore(key, val):
     subprocess.call(["xenstore-write", "data/host/%s" % uuid1, '{"name":"%s","value":"%s"}' % (key, val)])
     time.sleep(8)
     xen_read = subprocess.call(["xenstore-read", "data/guest/%s" % uuid1])
-    print(str(xen_read))
     return xen_read
 
 
@@ -111,14 +110,15 @@ def get_agent_version():
     """
     print("Version Check")
     xen_response = _call_agent_xenstore("version", "agent")
-    assert xen_response["retruncode"], "0"
+    assert (xen_response == 0)
+
 
 def reset_network():
     """
     """
     print("Performing reset network")
     xen_response = _call_agent_xenstore("resetnetwork", "")
-    assert xen_response["retruncode"], "0"
+    assert (xen_response == 0)
 
 
 def reset_password():
@@ -133,7 +133,7 @@ def reset_password():
     enc_pass = dh.encrypt(new_pass + '\n')
     print ("Executing Change Password")
     xen_response = _call_agent_xenstore("password", enc_pass)
-    assert xen_response["retruncode"], "0"
+    assert (xen_response == 0)
 
 
 def curl_public_domain():
@@ -142,7 +142,7 @@ def curl_public_domain():
     """
     domain = "http://www.google.com"
     statuscode = subprocess.call(["curl", "-Is", "%s" %domain])
-    assert statuscode, 0
+    assert (statuscode == 0)
 
 
 def test_all():
