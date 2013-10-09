@@ -113,8 +113,7 @@ class Nova:
 
 
         if 'local' in kwargs:
-            tar_base_path = ''
-            tar_name = ''
+            tar_base_path, tar_name = os.path.split(kwargs['local'])
         else:
             tar_base_path = "/root/nova-agent"
             tar_path = "%s/%s" % (tar_base_path, tar_name)
