@@ -7,6 +7,7 @@ tests/shell_tests/shunit2/*
 *.un~
 *.suo
 *.cfg
+.DS_Store
 bin
 obj
 _[Rr]e{Ss]harper*
