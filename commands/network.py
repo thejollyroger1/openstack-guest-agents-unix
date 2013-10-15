@@ -43,6 +43,8 @@ from cStringIO import StringIO
 import fcntl
 import logging
 import os
+import shutil
+import subprocess
 import platform
 import pyxenstore
 import re
@@ -58,13 +60,17 @@ import arch.network
 import suse.network
 import gentoo.network
 import freebsd.network
-
+import utils
 
 XENSTORE_INTERFACE_PATH = "vm-data/networking"
 XENSTORE_HOSTNAME_PATH = "vm-data/hostname"
 DEFAULT_HOSTNAME = ''
 HOSTS_FILE = '/etc/hosts'
 RESOLV_CONF_FILE = '/etc/resolv.conf'
+
+RESOLVCONF_RESOLV_CONF_FILE="/run/resolvconf/resolv.conf"
+RESOLVCONF_CONF_FILE="/etc/resolvconf.conf"
+RESOLVCONF_BASE = '/etc/resolvconf/resolv.conf.d/base'
 
 if os.uname()[0].lower() == 'freebsd':
     INTERFACE_LABELS = {"public": "xn0",
@@ -92,6 +98,16 @@ NETMASK_TO_PREFIXLEN = {
     '192.0.0.0': 2,        '128.0.0.0': 1,
     '0.0.0.0': 0,
 }
+
+
+class CustomErrorResolvConfBase(Exception):
+
+    def __init__(self, message):
+        self.message = repr(message)
+        logging.error("'resolvconf' config got error: %s" % self.message)
+
+    def __str__(self):
+        return self.message
 
 
 class NetworkCommands(commands.CommandBase):
@@ -453,3 +469,87 @@ def move_files(update_files, remove_files=None):
 def update_files(update_files, remove_files=None):
     stage_files(update_files)
     move_files(update_files, remove_files)
+
+
+def _mkdir_p(pathname):
+    if not os.path.exists(pathname):
+        basedir, _ = os.path.split(pathname)
+        if not os.path.exists(basedir):
+            _mkdir_p(basedir)
+            logging.info("creating directory: %s" % pathname)
+        os.mkdir(pathname)
+
+
+def _update_resolvconf_base(nameservers):
+    if nameservers != None:
+        nameservers = ["nameserver %s" % dns for dns in nameservers]
+    elif os.path.isfile('/etc/network/interfaces'):
+        fyl = open('/etc/network/interfaces', 'r')
+        dat = fyl.readlines()
+        fyl.close()
+
+        nameservers = []
+        for line in dat:
+            entry = re.findall(r'\s*dns-nameservers.*', line)
+            if entry != []:
+                nameservers.extend(entry[0].split()[1:])
+
+        nameservers = list(set(nameservers))
+        nameservers = ["nameservers %s" % dns for dns in nameservers]
+    else:
+        raise CustomErrorResolvConfBase("Error while updating resolvconf base"
+                                        "config file with nameservers.")
+
+    basedir, _ = os.path.split(RESOLVCONF_BASE)
+    _mkdir_p(basedir)
+    fyl = open(RESOLVCONF_BASE, 'w')
+    fyl.write("\n".join(nameservers))
+    fyl.close()
+    logging.info("'resolvconf' base config updated with %s" % nameservers)
+
+
+def _prepare_resolvconf_config(nameservers):
+    if not os.path.isdir("/run/resolvconf"):
+        if not os.path.isdir("/run"):
+            os.mkdir("/run")
+        os.mkdir("/run/resolvconf")
+    os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
+    open(RESOLVCONF_RESOLV_CONF_FILE, 'a').close()
+    os.symlink(RESOLVCONF_RESOLV_CONF_FILE, RESOLV_CONF_FILE)
+    _update_resolvconf_base(nameservers)
+    logging.info("resolvconf symlinked and pre-requisite completed")
+
+
+def _update_if_resolvconf_in_path():
+    for path in os.getenv('PATH').split(':'):
+        resolvconf_path = os.path.join(path, 'resolvconf')
+        if os.path.isfile(resolvconf_path) and os.path.isfile(RESOLVCONF_BASE):
+            shutil.copy(RESOLVCONF_BASE, RESOLVCONF_RESOLV_CONF_FILE)
+            logging.info("Resolvconf BASE config copied over resolvconf/resolv"
+                         ".conf to avoid cross-platform bin created errors.")
+            return True
+    return False
+
+
+def update_resolvconf(nameservers=None):
+    try:
+        if os.getenv('NOVA_AGENT_RESOLVCONF') == 'off':
+            logging.info("'resolvconf' has been turned off for system Env")
+
+        if os.path.islink(RESOLV_CONF_FILE):
+            logging.info("%s is already a link" % RESOLV_CONF_FILE)
+        else:
+            # getting config files and symlinks as per required
+            _prepare_resolvconf_config(nameservers)
+
+        # updating the resolv.conf as per dns-nameservers
+        if subprocess.call(["resolvconf", "-u"]) == 0:
+            logging.info("'resolvconf' completed")
+            return True
+
+        return _update_if_resolvconf_in_path()
+
+    except Exception, e:
+        logging.info("'resolvconf' not configured.\nError: %s" % repr(e))
+        os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
+        return False

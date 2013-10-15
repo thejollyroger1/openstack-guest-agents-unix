@@ -1,9 +1,13 @@
+*.cfg
+.temp
+tests/shell_tests/shunit2/*
 *.pyc
 *.swo
 *.swp
 *.un~
 *.suo
 *.cfg
+.DS_Store
 bin
 obj
 _[Rr]e{Ss]harper*

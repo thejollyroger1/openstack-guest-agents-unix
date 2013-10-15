@@ -58,13 +58,11 @@ def configure_network(hostname, interfaces):
     update_files[HOSTNAME_FILE] = data
 
     # Generate new /etc/resolv.conf file
-    # We do write dns-nameservers into the interfaces file, but that
-    # only updates /etc/resolv.conf if the 'resolvconf' package is
-    # installed.  Let's go ahead and modify /etc/resolv.conf.  It's just
-    # possible that it could get re-written twice.. oh well.
-    filepath, data = commands.network.get_resolv_conf(interfaces)
-    if data:
-        update_files[filepath] = data
+    # Uses resolvconf utility if present else creates /etc/resolv.conf
+    if not commands.network.update_resolvconf():
+        filepath, data = commands.network.get_resolv_conf(interfaces)
+        if data:
+            update_files[filepath] = data
 
     # Generate new /etc/hosts file
     filepath, data = commands.network.get_etc_hosts(interfaces, hostname)
