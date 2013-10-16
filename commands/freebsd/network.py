@@ -25,7 +25,7 @@ FreeBSD network helper module
 # - 1 IP per interface
 # - routes are global
 # - gateways are global
-# - DNS is configured via resolv.conf 
+# - DNS is configured via resolv.conf
 
 import os
 import re
@@ -37,6 +37,17 @@ from cStringIO import StringIO
 import commands.network
 
 RCCONF_FILE = "/etc/rc.conf"
+
+
+def fetch_all_from_xendict(interfaces, keyname):
+    xens = interfaces.keys()
+    values = []
+    for xen in xens:
+        for keyval in interfaces.get(xen, []).get(keyname, []):
+            values.append(keyval.encode('ascii','ignore'))
+        if '' in values:
+            values.remove('')
+    return list(set(values))
 
 
 def configure_network(hostname, interfaces):
@@ -52,9 +63,12 @@ def configure_network(hostname, interfaces):
     update_files[RCCONF_FILE] = data
 
     # Generate new /etc/resolv.conf file
-    filepath, data = commands.network.get_resolv_conf(interfaces)
-    if data:
-        update_files[filepath] = data
+    # Uses resolvconf utility if present else creates /etc/resolv.conf
+    nameservers = fetch_all_from_xendict(interfaces, 'dns')
+    if not commands.network.update_resolvconf(nameservers):
+        filepath, data = commands.network.get_resolv_conf(interfaces)
+        if data:
+            update_files[filepath] = data
 
     # Generate new /etc/hosts file
     filepath, data = commands.network.get_etc_hosts(interfaces, hostname)
@@ -103,8 +117,8 @@ def configure_network(hostname, interfaces):
     status = os.waitpid(p.pid, 0)[1]
     logging.debug('status = %d' % status)
 
-    if status != 0:
-        return (500, "Couldn't restart network routing: %d" % status)
+    #if status != 0:
+    #    return (500, "Couldn't restart network routing: %d" % status)
 
     return (0, "")
 
