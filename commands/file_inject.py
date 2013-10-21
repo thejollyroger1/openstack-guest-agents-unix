@@ -27,7 +27,16 @@ import os.path
 import time
 
 
+def _get_file_permissions(filename):
+    try:
+        _stat = os.stat(filename)
+        return (_stat.st_mode, _stat.st_uid, _stat.st_gid)
+    except Exception as e:
+        return (0644, 0, 0)
+
+
 def _write_file(filename, data):
+    permission, owner, group = _get_file_permissions(filename)
     dirname = os.path.dirname(filename)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
@@ -38,8 +47,8 @@ def _write_file(filename, data):
     f.write(data)
     f.close()
 
-    os.chown(tempfilename, 0, 0)
-    os.chmod(tempfilename, 0644)
+    os.chown(tempfilename, owner, group)
+    os.chmod(tempfilename, permission)
 
     if os.path.exists(filename):
         # Backup old file first
