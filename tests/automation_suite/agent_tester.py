@@ -136,12 +136,23 @@ def reset_password():
     assert (xen_response == 0)
 
 
+def inject_file(file_data=None):
+    """
+    """
+    print("Inject File")
+
+    if file_data is None:
+        file_data = "L3Jvb3QvaGVsbG8sL3Jvb3QvaGVsbG8sbm90aGluZyxlbHNlIGhlcmUgdG9vLi4g"
+    xen_response = _call_agent_xenstore("injectfile", file_data)
+    assert (xen_response == 0)
+
+
 def curl_public_domain():
     """
     It tries to curl a Public Domain checking its IP configs and DNS resolving.
     """
     domain = "http://www.google.com"
-    statuscode = subprocess.call(["curl", "-Is", "%s" %domain])
+    statuscode = subprocess.call(["curl", "-Is", "%s" % domain])
     assert (statuscode == 0)
 
 
@@ -151,6 +162,7 @@ def test_all():
     reset_network()
     time.sleep(2)
     reset_password()
+    inject_file()
     curl_public_domain()
 
 
