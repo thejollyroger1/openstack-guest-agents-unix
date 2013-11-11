@@ -106,13 +106,13 @@ def configure_network(hostname, interfaces):
         files_update_error = e
 
     # Restart network
-    logging.debug('executing /etc/init.d/networking restart')
-    p = subprocess.Popen(["/etc/init.d/networking", "restart"],
+    logging.debug('executing "service networking restart"')
+    p = subprocess.Popen(["service", "networking", "restart"],
             stdin=pipe, stdout=pipe, stderr=pipe, env={})
     logging.debug('waiting on pid %d' % p.pid)
     p.wait()
     status = p.returncode
-    logging.debug('"/etc/init.d/networking restart" exited with code %d' %
+    logging.debug('"service networking restart" exited with code %d' %
             status)
 
     # Bring back up what we can
