@@ -258,6 +258,7 @@ def get_interface_files(interfaces, version):
 
 
 def _clean_assigned_ip(ifname):
+    pipe = subprocess.PIPE
     logging.debug("cleaning up current ip assigned to %s" % ifname)
     ip_proc = subprocess.Popen(["ip", "address", "flush", "dev", ifname],
                                 stdin=pipe, stdout=pipe, stderr=pipe, env={})
