@@ -157,7 +157,7 @@ install_pre_requisite_gentoo(){
   export RELEASE_FILE='/etc/gentoo-release'
   cat $RELEASE_FILE
 
-  emerge git autoconf
+  emerge dev-vcs/git autoconf
   emerge patchelf
 
   INSTALL_PIP='emerge dev-python/pip'
