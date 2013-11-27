@@ -94,5 +94,36 @@ class InjectFileTests(agent_test.TestCase):
 
         os.unlink(file_path)
 
+    def test_file_permission(self):
+        """Test 'injectfile' replacing a present file."""
+
+        file_data = "this is the new file"
+        file_path = os.getcwd() + "/file_inject_test_existing.%d" % os.getpid()
+
+        if os.path.exists(file_path):
+            os.unlink(file_path)
+
+        with open(file_path, "w") as fyl:
+            fyl.write("this will be old file")
+
+        os.chmod(file_path, 0666)
+        os.chown(file_path, 0, 1)
+
+        _stat = os.stat(file_path)
+        permission1, owner1, group1 = _stat.st_mode, _stat.st_uid, _stat.st_gid
+
+        b64_arg = base64.b64encode("%s,%s" % (file_path, file_data))
+        self.commands.run_command('injectfile', b64_arg)
+
+        _stat = os.stat(file_path)
+        permission2, owner2, group2 = _stat.st_mode, _stat.st_uid, _stat.st_gid
+
+        self.assertTrue(os.path.exists(file_path))
+        self.assertEqual(permission1, permission2)
+        self.assertEqual(owner1, owner2)
+        self.assertEqual(group1, group2)
+
+        os.unlink(file_path)
+
 if __name__ == "__main__":
     agent_test.main()
