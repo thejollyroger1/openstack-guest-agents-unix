@@ -42,6 +42,25 @@ shout(){
   echo "***************************************************"
 }
 
+# push CentOS required Xen repo config
+centos_xen_repo(){
+  cat > /etc/yum.repos.d/CentOS-Xen.repo <<XENEOF
+# CentOS-Xen.repo
+#
+# Please see http://wiki.centos.org/QaWiki/Xen4 for more
+# information
+
+[Xen4CentOS]
+name=CentOS-\$releasever - xen
+baseurl=http://mirror.centos.org/centos/\$releasever/xen4/\$basearch/
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+XENEOF
+
+  yum -y repolist
+}
+
 # install patchelf to Git
 patchelf_git(){
   shout "installing PatchElf from Git"
@@ -129,7 +148,7 @@ install_pre_requisite_redhat(){
   yum -y install python-crypto python-devel
 
   if [ $DISTRO_NAME == "centos" ]; then
-    yum install -y centos-release-xen.x86_64 &&  yum repolist
+    centos_xen_repo
   else
     get_xen_repo
   fi
