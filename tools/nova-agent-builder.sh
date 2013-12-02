@@ -18,6 +18,12 @@ NOVA_AGENT_REPO='git://github.com/rackerlabs/openstack-guest-agents-unix.git'
 BASE_DIR="/tmp/test_nova_agent"
 REPO_DIR='nova-agent'
 
+PATCHELF_VERSION="0.6"
+PATCHELF_TGZ_URL="https://github.com/NixOS/patchelf/archive/${PATCHELF_VERSION}.tar.gz"
+PATCHELF_BASE='/tmp/patchelf'
+PATCHELF_TGZ_LOCAL="${PATCHELF_BASE}/patchelf-${PATCHELF_VERSION}.tgz"
+PATCHELF_SRC_LOCAL="${PATCHELF_BASE}/patchelf-${PATCHELF_VERSION}"
+
 SYSTEM_NOVA_AGENT='/usr/share/nova-agent'
 BACKUP_NOVA_AGENT=$SYSTEM_NOVA_AGENT".original"
 
@@ -39,21 +45,18 @@ shout(){
 # install patchelf to Git
 patchelf_git(){
   shout "installing PatchElf from Git"
-  PATCHELF_DIR='/tmp/patchelf'
-  CURR_DIR=`pwd`
-  if [ -d $PATCHELF_DIR ]; then
-    cd $PATCHELF_DIR
-    git checkout .
-    git pull
-  else
-    git clone https://github.com/NixOS/patchelf.git $PATCHELF_DIR
-    cd $PATCHELF_DIR
-  fi
+  _CURR_DIR=`pwd`
+  mkdir -p $PATCHELF_BASE
+  cd $PATCHELF_BASE
+  wget -c -O "${PATCHELF_TGZ_LOCAL}" "${PATCHELF_TGZ_URL}"
+  tar zxvf "${PATCHELF_TGZ_LOCAL}"
+
+  cd $PATCHELF_SRC_LOCAL
   sh bootstrap.sh
   ./configure
   make
   make install
-  cd $CURR_DIR
+  cd $_CURR_DIR
 }
 
 # installing python modules
