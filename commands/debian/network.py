@@ -106,8 +106,8 @@ def configure_network(hostname, interfaces):
         files_update_error = e
 
     # Restart network
-    logging.debug('executing "/usr/bin/env service networking restart"')
-    p = subprocess.Popen(["/usr/bin/env", "service", "networking", "restart"],
+    logging.debug('executing "/usr/sbin/service networking restart"')
+    p = subprocess.Popen(["/usr/sbin/service", "networking", "restart"],
             stdin=pipe, stdout=pipe, stderr=pipe, env={})
     logging.debug('waiting on pid %d' % p.pid)
     p.wait()
