@@ -106,14 +106,9 @@ def configure_network(hostname, interfaces):
         files_update_error = e
 
     # Restart network
-    logging.debug('executing "/usr/sbin/service networking restart"')
-    p = subprocess.Popen(["/usr/sbin/service", "networking", "restart"],
-            stdin=pipe, stdout=pipe, stderr=pipe, env={})
-    logging.debug('waiting on pid %d' % p.pid)
-    p.wait()
-    status = p.returncode
-    logging.debug('"service networking restart" exited with code %d' %
-            status)
+    status = _run_system_command("/etc/init.d/networking restart")
+    if status != 0:
+        status = _run_system_command("/usr/sbin/service networking restart")
 
     # Bring back up what we can
     _run_on_interfaces("/sbin/ifup")
@@ -126,6 +121,16 @@ def configure_network(hostname, interfaces):
 
     return (0, "")
 
+
+def _run_system_command(cmd){
+    logging.debug('executing "%s"' % cmd)
+    p = subprocess.Popen(cmd.split(),
+                         stdin=pipe, stdout=pipe, stderr=pipe, env={})
+    logging.debug('waiting on pid %d' % p.pid)
+    p.wait()
+    logging.debug('"%s" exited with code %d' % (cmd, p.returncode))
+    return p.returncode
+}
 
 def get_hostname_file(hostname):
     return hostname + '\n'
