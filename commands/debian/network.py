@@ -122,7 +122,7 @@ def configure_network(hostname, interfaces):
     return (0, "")
 
 
-def _run_system_command(cmd){
+def _run_system_command(cmd):
     logging.debug('executing "%s"' % cmd)
     p = subprocess.Popen(cmd.split(),
                          stdin=pipe, stdout=pipe, stderr=pipe, env={})
@@ -130,7 +130,7 @@ def _run_system_command(cmd){
     p.wait()
     logging.debug('"%s" exited with code %d' % (cmd, p.returncode))
     return p.returncode
-}
+
 
 def get_hostname_file(hostname):
     return hostname + '\n'
