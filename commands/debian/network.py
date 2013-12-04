@@ -68,8 +68,6 @@ def configure_network(hostname, interfaces):
     filepath, data = commands.network.get_etc_hosts(interfaces, hostname)
     update_files[filepath] = data
 
-    pipe = subprocess.PIPE
-
     # Set hostname
     try:
         commands.network.sethostname(hostname)
@@ -124,6 +122,8 @@ def configure_network(hostname, interfaces):
 
 def _run_system_command(cmd):
     logging.debug('executing "%s"' % cmd)
+
+    pipe = subprocess.PIPE
     p = subprocess.Popen(cmd.split(),
                          stdin=pipe, stdout=pipe, stderr=pipe, env={})
     logging.debug('waiting on pid %d' % p.pid)
