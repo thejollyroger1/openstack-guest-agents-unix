@@ -247,6 +247,7 @@ def configure_network(hostname, interfaces):
 def get_hostname_file_systemd(hostname):
     _execute(['/usr/bin/hostnamectl', 'set-hostname', hostname])
 
+
 def get_hostname_file(infile, hostname):
     """
     Update hostname on system
