@@ -54,6 +54,7 @@ import sys
 import os
 import subprocess
 import logging
+import re
 
 from datetime import datetime
 
@@ -137,7 +138,7 @@ def get_hostname():
         return None
 
     except Exception, e:
-        logging.info("Current ArchLinux hostname enquiry failed: %s" % str(e))
+        logging.info("Current Gentoo hostname enquiry failed: %s" % str(e))
         return None
 
 
