@@ -113,6 +113,25 @@ def _update_key_value(infile, key, value):
     return outfile.read()
 
 
+def get_hostname():
+    """
+    Will fetch current hostname of VM if any and return.
+    Looks at /etc/sysconfig/network config for RHEL-based server.
+    """
+    try:
+        with open(NETWORK_FILE) as hostname_fyl:
+            for line in hostname_fyl.readlines():
+                hn = re.search('HOSTNAME=(.*)', line)
+                if hn:
+                    return hn.group(1)
+        return None
+
+    except Exception, e:
+        logging.info("Current EL hostname enquiry failed: %s" % str(e))
+        return None
+
+
+
 def get_hostname_file(infile, hostname):
     """
     Update hostname on system
