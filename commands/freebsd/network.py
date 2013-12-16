@@ -39,6 +39,24 @@ import commands.network
 RCCONF_FILE = "/etc/rc.conf"
 
 
+def get_hostname():
+    """
+    Will fetch current hostname of VM if any and return.
+    Looks at /etc/rc.conf config for FreeBSD server.
+    """
+    try:
+        with open(RCCONF_FILE) as hostname_fyl:
+            for line in hostname_fyl.readlines():
+                hn = re.search('hostname=(.*)', line)
+                if hn:
+                    return hn.group(1)
+        return None
+
+    except Exception, e:
+        logging.info("Current FreeBSD hostname enquiry failed: %s" % str(e))
+        return None
+
+
 def fetch_all_from_xendict(interfaces, keyname):
     xens = interfaces.keys()
     values = []
