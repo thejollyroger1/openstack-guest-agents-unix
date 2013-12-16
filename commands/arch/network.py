@@ -244,6 +244,26 @@ def configure_network(hostname, interfaces):
     return (0, "")
 
 
+def get_hostname():
+    """
+    Just required to check /etc/rc.conf for SysVInit based Archlinux images.
+    All updated SystemD supporting images have it at default /etc/hostname
+    Will fetch current hostname of VM if any and return.
+    Looks at /etc/rc.conf config for Archlinux server using SysVInit.
+    """
+    try:
+        with open(CONF_FILE) as hostname_fyl:
+            for line in hostname_fyl.readlines():
+                hn = re.search('HOSTNAME="(.*)"', line)
+                if hn:
+                    return hn.group(1)
+        return None
+
+    except Exception, e:
+        logging.info("Init support Arch hostname enquiry failed: %s." % str(e))
+        return None
+
+
 def get_hostname_file_systemd(hostname):
     _execute(['/usr/bin/hostnamectl', 'set-hostname', hostname])
 
