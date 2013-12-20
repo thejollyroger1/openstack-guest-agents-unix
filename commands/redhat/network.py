@@ -28,6 +28,7 @@ redhat/centos network helper module
 # - DNS is configured per interface
 
 import os
+import re
 import time
 import glob
 import subprocess
