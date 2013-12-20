@@ -19,7 +19,6 @@ import subprocess
 import shutil
 import time
 import platform
-import json
 import urllib2
 
 distro_name = platform.dist()[0]
@@ -42,6 +41,11 @@ def run_me_right(cmd):
 
 def latest_github_tag():
     """ Returns latest Release Tag at GitHub. """
+    release_tag = os.getenv("NOVA_AGENT_RELEASE")
+    if release_tag:
+        return release_tag
+
+    import json
     release_tags_github_url = "https://api.github.com/repos/rackerlabs/openstack-guest-agents-unix/tags"
     release_tags_json = urllib2.urlopen(release_tags_github_url)
     release_tags_data = json.load(release_tags_json)
