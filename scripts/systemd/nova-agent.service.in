@@ -1,5 +1,7 @@
 [Unit]
 Description=nova-agent service
+After=proc-xen.mount xe-daemon.service xe-linux-distribution.service
+Before=network.target
 
 [Service]
 Environment=LD_LIBRARY_PATH=@prefix@/share/@PACKAGE@/@PACKAGE_VERSION@/lib
