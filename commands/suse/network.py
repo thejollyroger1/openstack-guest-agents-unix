@@ -92,6 +92,23 @@ def configure_network(hostname, interfaces):
     return (0, "")
 
 
+def get_hostname():
+    """
+    Will fetch current hostname of VM if any and return.
+    Looks at /etc/HOSTNAME config for Suse config server.
+    """
+    try:
+        with open(HOSTNAME_FILE) as fyl:
+            _hostname = fyl.read().strip()
+            if _hostname != "":
+                return _hostname
+        return None
+
+    except Exception, e:
+        logging.info("Current Suse hostname enquiry failed: %s" % str(e))
+        return None
+
+
 def get_hostname_file(hostname):
     """
     Update hostname on system
