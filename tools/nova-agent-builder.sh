@@ -202,7 +202,7 @@ install_pre_requisite_freebsd(){
     export INSTALL_D=""
     uname -a
 
-    pkg_add -r git autogen automake wget bash
+    pkg_add -r git autogen automake wget bash libtool
     pkg_add -r py27-unittest2 py27-cryptkit py27-pycrypto py27-mox
 
     # re-install xen-tool :: required for pyxenstore install

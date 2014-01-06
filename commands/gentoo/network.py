@@ -54,6 +54,7 @@ import sys
 import os
 import subprocess
 import logging
+import re
 
 from datetime import datetime
 
@@ -121,6 +122,24 @@ def configure_network(hostname, interfaces):
             return (500, "Couldn't restart network %s: %d" % (ifname, status))
 
     return (0, "")
+
+
+def get_hostname():
+    """
+    Will fetch current hostname of VM if any and return.
+    Looks at /etc/conf.d/hostname config for Gentoo server.
+    """
+    try:
+        with open(HOSTNAME_FILE) as hostname_fyl:
+            for line in hostname_fyl.readlines():
+                hn = re.search('HOSTNAME="(.*)"', line)
+                if hn:
+                    return hn.group(1)
+        return None
+
+    except Exception, e:
+        logging.info("Current Gentoo hostname enquiry failed: %s" % str(e))
+        return None
 
 
 def get_hostname_file(hostname):

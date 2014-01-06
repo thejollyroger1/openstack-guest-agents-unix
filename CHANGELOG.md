@@ -2,7 +2,29 @@ OpenStack-Guest-Agents-Unix CHANGELOG
 =====================================
 
 
-RELEASE: v0.0.1.37
+RELEASE: v1.39.0
+-----------------
+
+2013-12-31 AbhishekKr <abhikumar163@gmail.com>
+
+> First of all, we are changing Release Versioning from [major[.minor[.maintenance[.build]]] to the [Semantic Versioning](http://semver.org/) model of [major[.minor[.patch]]] as is evident from our Release Tag.
+
+This release contain several small steps towards stability across multiple distros:
+
+* Hostname configuration fixed to not get reset on missing XenStore value
+* FreeBSD installer corrected for Bash-dependencies
+* resolvconf awareness support added for Ubuntu
+* resolvconf awareness support added for FreeBSD
+* Existing file's permission sustained for File Injection
+* Gentoo made self-capable to clear sticky network configuration
+* Ubuntu's forced Upstart network restart handled as failover
+* lower level Functional Tests added for quick smoke
+* some smaller dependency upgrades and/or fixes; and cleaning repo/code
+
+***
+
+
+RELEASE: v0.0.1.38
 -----------------
 
 2013-08-19 AbhishekKr <abhikumar163@gmail.com>

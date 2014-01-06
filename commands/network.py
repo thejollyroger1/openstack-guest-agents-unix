@@ -152,6 +152,9 @@ class NetworkCommands(commands.CommandBase):
 
     @commands.command_add('resetnetwork')
     def resetnetwork_cmd(self, data):
+        """
+        Configure network & hostname, restarting network.
+        """
 
         os_mod = self.detect_os()
         if not os_mod:
@@ -163,7 +166,13 @@ class NetworkCommands(commands.CommandBase):
             hostname = xs_handle.read(XENSTORE_HOSTNAME_PATH)
             logging.info('hostname: %r (from xenstore)' % hostname)
         except pyxenstore.NotFoundError:
-            hostname = DEFAULT_HOSTNAME
+            try:
+                hostname = os_mod.network.get_hostname()
+            except:
+                hostname = _get_hostname()
+
+            if not hostname:
+                hostname = DEFAULT_HOSTNAME
             logging.info('hostname: %r (default)' % hostname)
 
         interfaces = []
@@ -553,3 +562,20 @@ def update_resolvconf(nameservers=None):
         logging.info("'resolvconf' not configured.\nError: %s" % repr(e))
         os.rename(RESOLV_CONF_FILE, RESOLVCONF_CONF_FILE)
         return False
+
+
+def _get_hostname():
+    """
+    Will fetch current hostname of VM if any and return.
+    Looks at /etc/hostname config for Generic config server.
+    """
+    try:
+        with open("/etc/hostname") as fyl:
+            _hostname = fyl.read().strip()
+            if _hostname != "":
+                return _hostname
+        return None
+
+    except Exception, e:
+        logging.info("Current hostname enquiry failed: %s" % str(e))
+        return None
