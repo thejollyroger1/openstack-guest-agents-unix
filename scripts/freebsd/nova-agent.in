@@ -31,8 +31,8 @@
 #
 
 # PROVIDE: novaagent
-# BEFORE: netif
-# REQUIRE: FILESYSTEMS
+# BEFORE: NETWORKING sshd
+# REQUIRE: FILESYSTEMS xenguest
 
 . /etc/rc.subr
 
