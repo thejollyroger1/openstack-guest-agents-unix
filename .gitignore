@@ -55,3 +55,5 @@ unix/scripts/generic/nova-agent
 unix/scripts/gentoo/nova-agent
 unix/scripts/freebsd/nova-agent
 .idea/*
+*.shelve
+**/.venv
