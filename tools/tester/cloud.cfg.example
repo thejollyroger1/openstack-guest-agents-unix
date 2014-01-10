@@ -1,0 +1,7 @@
+[rackspace]
+user = superman
+key = 111a222b3333333333cd444e555f6gh7
+
+[rackspace-nova-dfw]
+user = batman
+key = 111a222b3333333333cd444e555f6gh7
