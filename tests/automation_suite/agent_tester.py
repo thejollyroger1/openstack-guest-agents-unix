@@ -156,6 +156,12 @@ def curl_public_domain():
     assert (statuscode == 0)
 
 
+def test_host_name():
+    print("Test Host Name")
+    statuscode = subprocess.call(["hostname"])
+    assert (statuscode == 0)
+
+
 def test_all():
     get_agent_version()
     time.sleep(2)
@@ -164,7 +170,7 @@ def test_all():
     reset_password()
     inject_file()
     curl_public_domain()
-
+    test_host_name()
 
 if __name__ == "__main__":
     test_all()

@@ -134,7 +134,7 @@ class Nova:
         os.chdir(tar_base_path)
         run_me_right("tar zvxf %s" % (tar_name))
         time.sleep(5)
-        run_me_right("bash installer.sh")
+        run_me_right("/bin/bash installer.sh")
         time.sleep(5)
         run_me_right("%s start" % service_path)
 

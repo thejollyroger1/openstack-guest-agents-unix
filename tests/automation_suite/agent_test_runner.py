@@ -26,7 +26,6 @@ def load_config():
     print(user, hosts)
     env.host_string = user + "@" + hosts
     env.password = config.get('credentials', 'adminpass')
-    run("hostname")
 
 
 def prerequisite():
