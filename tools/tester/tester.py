@@ -61,7 +61,6 @@ def create_nodes(conn):
             vm_name = "%s_%s" % (SERVER_NAME_PREPEND,
                                  "_".join(_img.name.split()))
             metadata = virtualmachine.create(conn, vm_name, _img, size)
-            #import pdb; pdb.set_trace()
             print(repr(metadata))
             nodes[metadata["uuid"]] = metadata["extra"]["password"]
             print("\n")
@@ -109,7 +108,11 @@ def _extract_node_config(nodes_to_check, nodes_password):
     return list(set(nodes_to_check) - set(nodes_checked))
 
 
-def map_nodes(conn, nodes_password):
+def map_nodes(conn, nodes_password, datafile):
+    try:
+        os.remove(datafile)
+    except:
+        banner("%s will be created to contain node mapping" % datafile)
     nodes_to_map = conn.list_nodes()
     sleep_counter = NODE_BUILD_TIMEOUT
     while len(nodes_to_map) != 0:
@@ -163,7 +166,7 @@ if __name__ == "__main__":
     banner("CREATE NODES")
     nodes_password = create_nodes(conn)
     banner("MAP CREATED NODES TO CONFIG")
-    map_nodes(conn, nodes_password)
+    map_nodes(conn, nodes_password, NODE_DATAFILE)
     banner("READ NODES CONFIG")
     read_nodes_config()
     banner("CREATE BINTARs")

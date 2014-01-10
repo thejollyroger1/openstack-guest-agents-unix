@@ -14,7 +14,6 @@ def uptime(host, user, password, shell="bash -l -c"):
                   use_ssh_config=False,
                   warn_only=True,
                   abort_on_prompts=True):
-        print(env.password, env.user, env.shell)
         run('uptime')
     fabric.network.disconnect_all()
 
