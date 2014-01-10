@@ -18,6 +18,12 @@ NOVA_AGENT_REPO='git://github.com/rackerlabs/openstack-guest-agents-unix.git'
 BASE_DIR="/tmp/test_nova_agent"
 REPO_DIR='nova-agent'
 
+PATCHELF_VERSION="0.6"
+PATCHELF_TGZ_URL="https://github.com/NixOS/patchelf/archive/${PATCHELF_VERSION}.tar.gz"
+PATCHELF_BASE='/tmp/patchelf'
+PATCHELF_TGZ_LOCAL="${PATCHELF_BASE}/patchelf-${PATCHELF_VERSION}.tgz"
+PATCHELF_SRC_LOCAL="${PATCHELF_BASE}/patchelf-${PATCHELF_VERSION}"
+
 SYSTEM_NOVA_AGENT='/usr/share/nova-agent'
 BACKUP_NOVA_AGENT=$SYSTEM_NOVA_AGENT".original"
 
@@ -36,24 +42,40 @@ shout(){
   echo "***************************************************"
 }
 
+# push CentOS required Xen repo config
+centos_xen_repo(){
+  cat > /etc/yum.repos.d/CentOS-Xen.repo <<XENEOF
+# CentOS-Xen.repo
+#
+# Please see http://wiki.centos.org/QaWiki/Xen4 for more
+# information
+
+[Xen4CentOS]
+name=CentOS-\$releasever - xen
+baseurl=http://mirror.centos.org/centos/\$releasever/xen4/\$basearch/
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+XENEOF
+
+  yum -y repolist
+}
+
 # install patchelf to Git
 patchelf_git(){
   shout "installing PatchElf from Git"
-  PATCHELF_DIR='/tmp/patchelf'
-  CURR_DIR=`pwd`
-  if [ -d $PATCHELF_DIR ]; then
-    cd $PATCHELF_DIR
-    git checkout .
-    git pull
-  else
-    git clone https://github.com/NixOS/patchelf.git $PATCHELF_DIR
-    cd $PATCHELF_DIR
-  fi
+  _CURR_DIR=`pwd`
+  mkdir -p $PATCHELF_BASE
+  cd $PATCHELF_BASE
+  wget -c -O "${PATCHELF_TGZ_LOCAL}" "${PATCHELF_TGZ_URL}"
+  tar zxvf "${PATCHELF_TGZ_LOCAL}"
+
+  cd $PATCHELF_SRC_LOCAL
   sh bootstrap.sh
   ./configure
   make
   make install
-  cd $CURR_DIR
+  cd $_CURR_DIR
 }
 
 # installing python modules
@@ -126,7 +148,7 @@ install_pre_requisite_redhat(){
   yum -y install python-crypto python-devel
 
   if [ $DISTRO_NAME == "centos" ]; then
-    yum install -y centos-release-xen.x86_64 &&  yum repolist
+    centos_xen_repo
   else
     get_xen_repo
   fi
@@ -157,7 +179,7 @@ install_pre_requisite_gentoo(){
   export RELEASE_FILE='/etc/gentoo-release'
   cat $RELEASE_FILE
 
-  emerge git autoconf
+  emerge dev-vcs/git autoconf
   emerge patchelf
 
   INSTALL_PIP='emerge dev-python/pip'
@@ -180,7 +202,7 @@ install_pre_requisite_freebsd(){
     export INSTALL_D=""
     uname -a
 
-    pkg_add -r git autogen automake wget bash
+    pkg_add -r git autogen automake wget bash libtool
     pkg_add -r py27-unittest2 py27-cryptkit py27-pycrypto py27-mox
 
     # re-install xen-tool :: required for pyxenstore install

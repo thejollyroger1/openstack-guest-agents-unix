@@ -54,6 +54,7 @@ import sys
 import os
 import subprocess
 import logging
+import re
 
 from datetime import datetime
 
@@ -101,8 +102,10 @@ def configure_network(hostname, interfaces):
 
     # Restart network
     for ifname in ifaces:
-        scriptpath = '/etc/init.d/net.%s' % ifname
+        if not _clean_assigned_ip(ifname):
+            return (500, "Couldn't flush network %s: %d" % (ifname, status))
 
+        scriptpath = '/etc/init.d/net.%s' % ifname
         if not os.path.exists(scriptpath):
             # Gentoo won't create these symlinks automatically
             os.symlink('net.lo', scriptpath)
@@ -119,6 +122,24 @@ def configure_network(hostname, interfaces):
             return (500, "Couldn't restart network %s: %d" % (ifname, status))
 
     return (0, "")
+
+
+def get_hostname():
+    """
+    Will fetch current hostname of VM if any and return.
+    Looks at /etc/conf.d/hostname config for Gentoo server.
+    """
+    try:
+        with open(HOSTNAME_FILE) as hostname_fyl:
+            for line in hostname_fyl.readlines():
+                hn = re.search('HOSTNAME="(.*)"', line)
+                if hn:
+                    return hn.group(1)
+        return None
+
+    except Exception, e:
+        logging.info("Current Gentoo hostname enquiry failed: %s" % str(e))
+        return None
 
 
 def get_hostname_file(hostname):
@@ -253,3 +274,17 @@ def get_interface_files(interfaces, version):
         data, ifaces = _confd_net_file_legacy(interfaces)
 
     return {'net': data}
+
+
+def _clean_assigned_ip(ifname):
+    pipe = subprocess.PIPE
+    logging.debug("cleaning up current ip assigned to %s" % ifname)
+    ip_proc = subprocess.Popen(["ip", "address", "flush", "dev", ifname],
+                                stdin=pipe, stdout=pipe, stderr=pipe, env={})
+    logging.debug('waiting on pid %d' % ip_proc.pid)
+    status = os.waitpid(ip_proc.pid, 0)[1]
+    logging.debug('status = %d' % status)
+
+    if status != 0:
+        return False
+    return True
