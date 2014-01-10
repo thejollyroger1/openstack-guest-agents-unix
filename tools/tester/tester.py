@@ -132,26 +132,27 @@ def create_bintars(datafile):
     #whitelist_pattern = re.compile(r"FreeBSD.9\.2", re.IGNORECASE)
     bintar_nodes = [detail for uuid, detail in _data.items() if re.findall(whitelist_pattern, detail["name"]) != []]
     for detail in bintar_nodes:
-        print(detail)
         remote_control.uptime(detail["ip"], "root", detail["password"], detail["shell"])
         remote_control.create_nova_agent_bintar(detail["ip"], "root", detail["password"], detail["shell"])
     _datashelve.save_history(_data)
 
 
-def update_nova_agent(datafile):
+def run_at_nodes(datafile, task):
     _datashelve = data_handler.DataShelve()
     _data = _datashelve.load_history(datafile)
     blacklist_pattern = re.compile(r"FreeBSD|OpenSUSE|Gentoo", re.IGNORECASE)
     _nodes = [detail for uuid, detail in _data.items() if re.findall(blacklist_pattern, detail["name"]) == []]
     for detail in _nodes:
-        print(detail)
-        remote_control.uptime(detail["ip"], "root", detail["password"], detail["shell"])
-        remote_control.update_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
+        task(detail)
     _datashelve.save_history(_data)
 
 
-def test_nova_agent(datafile):
-    pass
+def update_nova_agent(detail):
+    remote_control.update_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
+
+
+def test_nova_agent(detail):
+    remote_control.test_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
 
 
 def banner(msg):
@@ -172,7 +173,7 @@ if __name__ == "__main__":
     banner("CREATE BINTARs")
     create_bintars(NODE_DATAFILE)
     banner("UPDATE NOVA AGENT")
-    update_nova_agent(NODE_DATAFILE)
+    run_at_nodes(NODE_DATAFILE, update_nova_agent)
     banner("TEST NOVA AGENT")
-    test_nova_agent(NODE_DATAFILE)
+    run_at_nodes(NODE_DATAFILE, test_nova_agent)
 
