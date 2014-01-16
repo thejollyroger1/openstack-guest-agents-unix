@@ -124,7 +124,9 @@ def reset_network():
 def reset_password():
     """
     """
-    new_pass = "Password"
+    new_pass = os.getenv("NOVA_AGENT_TESTNODE_PASSWORD")
+    if new_pass == None:
+        new_pass = "DefaultPassword"
     dh = SimpleDH()
     args = dh.get_public()
     resp = set_key_init(args)

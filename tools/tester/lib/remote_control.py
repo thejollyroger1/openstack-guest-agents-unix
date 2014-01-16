@@ -6,15 +6,19 @@ from fabric.tasks import execute
 import fabric.network
 import os
 
+FABRIC_USE_SSH_CONFIG = False
+FABRIC_ABORT_ON_PROMPTS = False #use ENV val of NOVA_AGENT_TESTNODE_PASSWORD
+FABRIC_WARN_ONLY = True
+
 
 def uptime(host, user, password, shell="bash -l -c"):
     with settings(host_string=host,
                   user=user,
                   password=password,
                   shell=shell,
-                  use_ssh_config=False,
-                  warn_only=True,
-                  abort_on_prompts=True):
+                  use_ssh_config=FABRIC_USE_SSH_CONFIG,
+                  warn_only=FABRIC_WARN_ONLY,
+                  abort_on_prompts=FABRIC_ABORT_ON_PROMPTS):
         run('uptime')
     fabric.network.disconnect_all()
 
@@ -24,9 +28,9 @@ def create_nova_agent_bintar(host, user, password, shell="bash -l -c"):
                   user=user,
                   password=password,
                   shell=shell,
-                  use_ssh_config=False,
-                  warn_only=True,
-                  abort_on_prompts=True):
+                  use_ssh_config=FABRIC_USE_SSH_CONFIG,
+                  warn_only=FABRIC_WARN_ONLY,
+                  abort_on_prompts=FABRIC_ABORT_ON_PROMPTS):
         this_dir = os.path.dirname(os.path.realpath(__file__)) + "/.."
         fyl_path = "%s/../%s" % (this_dir, 'nova-agent-builder.sh')
         run("rm -rf /tmp/test_nova_agent/nova-agent; mkdir -p /tmp/test_nova_agent/nova-agent")
@@ -43,9 +47,9 @@ def update_nova_agent(host, user, password, shell="bash -l -c"):
                   user=user,
                   password=password,
                   shell=shell,
-                  use_ssh_config=False,
-                  warn_only=True,
-                  abort_on_prompts=True):
+                  use_ssh_config=FABRIC_USE_SSH_CONFIG,
+                  warn_only=FABRIC_WARN_ONLY,
+                  abort_on_prompts=FABRIC_ABORT_ON_PROMPTS):
         fyl_name = "nova-agent-Linux-x86_64-1.39.0.tar.gz"
         this_dir = os.path.dirname(os.path.realpath(__file__)) + "/.."
         this_dir = "%s/../../.temp/artifacts" % this_dir
@@ -73,9 +77,9 @@ def test_nova_agent(host, user, password, shell="bash -l -c"):
                   user=user,
                   password=password,
                   shell=shell,
-                  use_ssh_config=False,
-                  warn_only=True,
-                  abort_on_prompts=True):
+                  use_ssh_config=FABRIC_USE_SSH_CONFIG,
+                  warn_only=FABRIC_WARN_ONLY,
+                  abort_on_prompts=FABRIC_ABORT_ON_PROMPTS):
         #install_package("python")
 
         fyl_name = "agent_tester.py"
