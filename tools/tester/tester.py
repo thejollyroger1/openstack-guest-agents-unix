@@ -12,7 +12,7 @@ import lib.data_handler as data_handler
 import lib.virtualmachine as virtualmachine
 import lib.virtualmachine_images as virtualmachine_images
 import lib.virtualmachine_sizes as virtualmachine_sizes
-import lib.remote_control as remote_control
+import lib.nova_agent_fabric as nova_agent_fabric
 
 
 SERVER_NAME_PREPEND = "autotest"
@@ -132,8 +132,8 @@ def create_bintars(datafile):
     #whitelist_pattern = re.compile(r"FreeBSD.9\.2", re.IGNORECASE)
     bintar_nodes = [detail for uuid, detail in _data.items() if re.findall(whitelist_pattern, detail["name"]) != []]
     for detail in bintar_nodes:
-        remote_control.uptime(detail["ip"], "root", detail["password"], detail["shell"])
-        remote_control.create_nova_agent_bintar(detail["ip"], "root", detail["password"], detail["shell"])
+        nova_agent_fabric.uptime(detail["ip"], "root", detail["password"], detail["shell"])
+        nova_agent_fabric.create_nova_agent_bintar(detail["ip"], "root", detail["password"], detail["shell"])
     _datashelve.save_history(_data)
 
 
@@ -148,11 +148,11 @@ def run_at_nodes(datafile, task):
 
 
 def update_nova_agent(detail):
-    remote_control.update_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
+    nova_agent_fabric.update_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
 
 
 def test_nova_agent(detail):
-    remote_control.test_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
+    nova_agent_fabric.test_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
 
 
 def banner(msg):

@@ -1,12 +1,5 @@
-### Usage
+## Automation Suite
 
-```Shell
-CI_SUITE_CONF="/tmp/test_nova_agent/server_configurations.cfg"
-NOVA_AGENT_BRANCH="createserver-mod"
-IMAGE_NAME=CentOS64
-RAXENV_NAME=prod
+This is a collection of Nova-Agent specific set of tests, being utilized by
 
-bash ci.sh $CI_SUITE_CONF $IMAGE_NAME $NOVA_AGENT_BRANCH $RAXENV_NAME
-```
-
-A Demo Server Config file can be referred [here](https://github.com/rackerlabs/openstack-guest-agents-unix/blob/ci_suite/tests/automation_suite/server_configurations.cfg.sample)
+[tester utility also part of same repo](https://github.com/rackerlabs/openstack-guest-agents-unix/tree/ci_suite/tools/tester)
