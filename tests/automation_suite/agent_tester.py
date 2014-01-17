@@ -7,6 +7,8 @@ import time
 import os
 import re
 
+from asserts import network as asserts_network
+
 
 ## adopted from openstack/nova codebase
 class SimpleDH(object):
@@ -153,9 +155,10 @@ def curl_public_domain():
     """
     It tries to curl a Public Domain checking its IP configs and DNS resolving.
     """
-    domain = "http://www.google.com"
-    statuscode = subprocess.call(["curl", "-Is", "%s" % domain])
-    assert (statuscode == 0)
+    if asserts_network.check_http("http://www.google.com"):
+        if asserts_network.check_resolv_conf():
+          return True
+    assert False
 
 
 def test_host_name():
