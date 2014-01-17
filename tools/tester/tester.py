@@ -127,9 +127,7 @@ def map_nodes(conn, nodes_password, datafile):
 def create_bintars(datafile):
     _datashelve = data_handler.DataShelve()
     _data = _datashelve.load_history(datafile)
-    #whitelist_pattern = re.compile(r"CentOS.6\.4|FreeBSD.9\.2", re.IGNORECASE)
-    whitelist_pattern = re.compile(r"CentOS.6\.4", re.IGNORECASE)
-    #whitelist_pattern = re.compile(r"FreeBSD.9\.2", re.IGNORECASE)
+    whitelist_pattern = re.compile(r"CentOS.6\.4|FreeBSD.9\.2", re.IGNORECASE)
     bintar_nodes = [detail for uuid, detail in _data.items() if re.findall(whitelist_pattern, detail["name"]) != []]
     for detail in bintar_nodes:
         nova_agent_fabric.uptime(detail["ip"], "root", detail["password"], detail["shell"])
@@ -148,11 +146,12 @@ def run_at_nodes(datafile, task):
 
 
 def update_nova_agent(detail):
-    nova_agent_fabric.update_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
+    nova_agent_fabric.prerequisite(detail["ip"], "root", detail["password"], detail["shell"])
+    nova_agent_fabric.update_nova_agent(detail["ip"], "root", detail["password"])
 
 
 def test_nova_agent(detail):
-    nova_agent_fabric.test_nova_agent(detail["ip"], "root", detail["password"], detail["shell"])
+    nova_agent_fabric.test_nova_agent(detail["ip"], "root", detail["password"])
 
 
 def banner(msg):
