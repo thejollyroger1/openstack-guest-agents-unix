@@ -13,14 +13,14 @@ def check_resolv(url):
     try:
         dns = socket.gethostbyname(url)
         return True
-    except Exception as e:
+    except Exception, e:
         return False
 
 
 def check_http(url):
     req = urllib2.Request(url)
     try: urllib2.urlopen(req)
-    except Exception as e:
+    except Exception, e:
         if(str(e.reason) == "[Errno -2] Name or service not known"):
             return False
     return True
