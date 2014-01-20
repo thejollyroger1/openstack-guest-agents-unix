@@ -42,9 +42,10 @@ def prerequisite(host, user, password, shell="bash -l -c"):
         put(this_fyl, that_fyl)
         run("chmod +x %s" % (that_fyl))
         if shell == "bash -l -c":
-            run("/usr/bin/env bash %s %s" % (that_fyl, "python"))
+            run("/usr/bin/env bash %s %s" % (that_fyl, "python2"))
         else:
-            run("/bin/csh %s %s %s" % (that_fyl, "python", "bash"))
+            run("/bin/csh %s %s %s" % (that_fyl, "python2", "bash"))
+    fabric.network.disconnect_all()
 
 
 def create_nova_agent_bintar(host, user, password, shell="bash -l -c"):
@@ -86,14 +87,7 @@ def update_nova_agent(host, user, password, shell="bash -l -c"):
         run("rm -rf %s; mkdir %s" % (that_dir, that_dir))
         put(this_bintar, that_bintar)
         put(this_installer, that_installer)
-        run("python %s --local '%s'" % (that_installer, that_bintar))
-        with cd(that_dir):
-            if run("ls /etc/init.d"):
-                run("/etc/init.d/nova-agent restart")
-            elif run("ls /etc/rc.d"):
-                run("/etc/rc.d/nova-agent restart")
-            elif run("ls /etc/systemctl"):
-                run("systemctl nova-agent restart")
+        run("python2 %s --local '%s'" % (that_installer, that_bintar))
     fabric.network.disconnect_all()
 
 
