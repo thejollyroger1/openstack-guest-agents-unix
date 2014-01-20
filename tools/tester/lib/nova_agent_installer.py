@@ -33,8 +33,9 @@ def panic(msg):
 
 def run_me_right(cmd):
     """ Run what is asked for and Panic if it fails. """
-    print("Running: %s" % cmd)
-    statuscode = subprocess.call(cmd.split())
+    for _part_cmd in cmd.split(";"):
+        print("Running: %s" % _part_cmd)
+        statuscode = subprocess.call(_part_cmd.split())
     if statuscode != 0:
         panic("FAILURE: %s" % cmd)
 
