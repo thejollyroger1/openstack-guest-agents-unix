@@ -99,12 +99,18 @@ def test_nova_agent(host, user, password, shell="bash -l -c"):
                   use_ssh_config=FABRIC_USE_SSH_CONFIG,
                   warn_only=FABRIC_WARN_ONLY,
                   abort_on_prompts=FABRIC_ABORT_ON_PROMPTS):
+        new_pass = os.getenv("NOVA_AGENT_TESTNODE_PASSWORD")
+        if new_pass == None:
+            new_pass = "DefaultPassword"
+        run("echo 'export NOVA_AGENT_TESTNODE_PASSWORD=%s' >> /etc/profile" %
+           new_pass)
+        run("echo $NOVA_AGENT_TESTNODE_PASSWORD")
 
-        fyl_name = "agent_tester.py"
         this_dir = os.path.dirname(os.path.realpath(__file__)) + "/../../../tests/automation_suite"
-        this_fyl = "%s/%s" % (this_dir, fyl_name)
-        that_dir = "/tmp"
-        that_fyl = "%s/%s" % (that_dir, fyl_name)
-        put(this_fyl, that_fyl)
-        run("chmod +x %s" % that_fyl)
+        that_dir = "/tmp/nova-agent"
+        that_fyl = "%s/automation_suite/agent_tester.py" % that_dir
+        run("rm -rf %s; mkdir -p %s" % (that_dir, that_dir))
+        put(this_dir, that_dir)
+        run("chmod +x %s" % (that_fyl))
         run(that_fyl)
+    fabric.network.disconnect_all()
