@@ -82,22 +82,41 @@ def install_uuid():
     run_me_right("tar zvxf %s" % (tar_name))
     time.sleep(4)
     os.chdir("%s/uuid-%s/" % (base_path, version))
-    run_me_right("python setup.py install")
+    run_me_right("python2 setup.py install")
 
 
 class Nova:
-    def agent_remove(self, service_path):
-        """ Cleans up curret Nova Agent. """
-        if os.path.exists(service_path):
-            run_me_right("%s stop" % service_path)
 
+    def service_commands(self):
+        "returns distro specific service command values"
+        service_start = "/etc/init.d/nova-agent start"
+        service_stop = "/etc/init.d/nova-agent stop"
+        if os.path.isdir("/etc/systemd"):
+            service_stop = "systemctl daemon-reload ; systemctl stop nova-agent.service"
+            service_start = "systemctl daemon-reload ; systemctl start nova-agent.service"
+        elif os.path.isdir("/etc/rc.d"):
+            service_stop = "/etc/rc.d/nova-agent stop"
+            service_start = "/etc/rc.d/nova-agent start"
+        return service_start, service_stop
+
+
+    def bintar_name(self, version):
+        if (distro_family == 'Linux'):
+            return "nova-agent-Linux-x86_64-%s.tar.gz" % version
+        elif (distro_family == 'FreeBSD'):
+            return "nova-agent-FreeBSD-amd64-%s.tar.gz" % version
+        panic("No Bintar for this Distro Family. '%s' is not supported." % distro_family)
+
+
+    def agent_remove(self):
+        """ Cleans up current Nova Agent. """
         paths_to_remove = ["/usr/share/nova-agent/",
-                          "/usr/sbin/nova-agent",
-                          service_path]
+                          "/usr/sbin/nova-agent"]
 
         for path in paths_to_remove:
             if os.path.exists(path):
                 run_me_right("rm -rf %s" % path)
+
 
     def agent_install(self, **kwargs):
         """ Cleans and Install latest agent. """
@@ -106,16 +125,8 @@ class Nova:
         else:
             version = 'custom'
 
-        if (distro_family == 'Linux'):
-            service_path = "/etc/init.d/nova-agent"
-            tar_name = "nova-agent-Linux-x86_64-%s.tar.gz" % version
-        elif (distro_family == 'FreeBSD'):
-            run_me_right("pkg_add -fr bash")
-            service_path = "/etc/rc.d/nova-agent"
-            tar_name = "nova-agent-FreeBSD-amd64-%s.tar.gz" % version
-        else:
-            panic("Distro Family '%s' is not supported." % distro_family)
-
+        service_start, service_stop = self.service_commands()
+        tar_name = self.bintar_name(version)
 
         if 'local' in kwargs:
             tar_base_path, tar_name = os.path.split(kwargs['local'])
@@ -130,14 +141,14 @@ class Nova:
                 tar_url = "%s/releases/download/v%s/%s" % (git_url, version, tar_name)
             download_link(tar_url, tar_path)
 
-        self.agent_remove(service_path)
-
+        run_me_right(service_stop)
+        self.agent_remove()
         os.chdir(tar_base_path)
         run_me_right("tar zvxf %s" % (tar_name))
         time.sleep(5)
-        run_me_right("/bin/bash installer.sh")
+        run_me_right("/usr/bin/env bash installer.sh")
         time.sleep(5)
-        run_me_right("%s start" % service_path)
+        run_me_right(service_start)
 
         if 'redhat' in platform.dist():
             if int(float(platform.dist()[1])) == 5:
