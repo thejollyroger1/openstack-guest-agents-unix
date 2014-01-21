@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ##### NOVA AGENT BUILDER
 ##### how_to:$ sh nova-agent-builder.sh help
 ##### W.I.P. works fine for most of cases,
