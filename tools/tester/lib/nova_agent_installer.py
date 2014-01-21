@@ -89,12 +89,12 @@ class Nova:
 
     def service_commands(self):
         "returns distro specific service command values"
-        service_start = "/etc/init.d/nova-agent start"
-        service_stop = "/etc/init.d/nova-agent stop"
-        if os.path.isdir("/etc/systemd"):
+        service_start = "service nova-agent start"
+        service_stop = "service nova-agent stop"
+        if os.path.isfile("/etc/systemd/system/nova-agent.service"):
             service_stop = "systemctl daemon-reload ; systemctl stop nova-agent.service"
             service_start = "systemctl daemon-reload ; systemctl start nova-agent.service"
-        elif os.path.isdir("/etc/rc.d"):
+        elif os.path.isfile("/etc/rc.d/nova-agent"):
             service_stop = "/etc/rc.d/nova-agent stop"
             service_start = "/etc/rc.d/nova-agent start"
         return service_start, service_stop
