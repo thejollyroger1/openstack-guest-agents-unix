@@ -14,7 +14,13 @@ def create(conn, name, image, size):
     """
     conn, name, image, size
     """
-    node = conn.create_node(name=name, image=image, size=size)
+    userdata_contents = """#!/usr/bin/env bash
+
+    touch ~/cloudinit_ran
+    touch /tmp/cloudinit_ran
+    """
+    node = conn.create_node(name=name, image=image, size=size,
+                           ex_userdata=userdata_contents)
 
     return {"uuid": node.uuid,
             "id": node.id,
