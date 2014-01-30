@@ -59,7 +59,7 @@ start() {
         /usr/bin/xenstore write data/host/system-init '{"name":"resetnetwork","value":""}'
         /usr/bin/xenstore watch -n 1 data/guest/system-init >/dev/null
         [ "$(/usr/bin/xenstore read data/guest/system-init | wc -l)" -gt "0" ] || eend 1
-        echo "UUID=\"$(/usr/bin/xenstore read name)\"" >> /etc/conf.d/nova-agent
+        echo "UUID=\"$(/usr/bin/xenstore read name)\"" > /etc/conf.d/nova-agent
     fi
 
     eend $RET
