@@ -59,6 +59,7 @@ import re
 from datetime import datetime
 
 import commands.network
+import commands.utils
 
 HOSTNAME_FILE = "/etc/conf.d/hostname"
 NETWORK_FILE = "/etc/conf.d/net"
@@ -102,8 +103,13 @@ def configure_network(hostname, interfaces):
 
     # Restart network
     for ifname in ifaces:
-        if not _clean_assigned_ip(ifname):
-            return (500, "Couldn't flush network %s: %d" % (ifname, status))
+        if commands.utils.is_system_command("ip"):
+            if not _clean_assigned_ip(ifname):
+                return (500, "Couldn't flush network %s: %d" %
+                        (ifname, status))
+        else:
+            logging.warning("Couldn't flush old network configuration as" +
+                          " safeguard. Required 'ip' command not present.")
 
         scriptpath = '/etc/init.d/net.%s' % ifname
         if not os.path.exists(scriptpath):
