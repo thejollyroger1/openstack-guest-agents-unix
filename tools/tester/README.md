@@ -1,15 +1,5 @@
 ## nova-agent's Tester
 
-[W.I.P.]
-
-Broken Support for: FreeBSD, Gentoo, OpenSUSE (issue with: Fabric)
-
-* The test-script currently require Python2.6+. Because some old images can't be upgraded to it the test will need to be made backward compatible.
-* install_package() need to be fixed for any distro which doesn't have Python already (only FreeBSD for now)
-* refactor nova-agent testing to a pluggable arch. to ease-up cloud-init adaptation
-
----
-
 It's a libcloud and fabric based utility to create an instance for each supported image type.
 
 Then prepare BINTARs on CentOS and FreeBSD.
@@ -22,6 +12,33 @@ And all this by just running...
 
 ```Shell
 
-./tester.py cloud.cfg
+fab create_update_test:./cloud.cfg
 
 ```
+
+here "./cloud.cfg" need to hold the credential details for your account
+
+To destroy all nodes created and used for tests, run
+
+```
+
+fab destroy_nodes:./cloud.cfg
+
+```
+
+To see what all different tasks Fabric can do using it, run
+
+```Shell
+
+fab -l
+
+```
+
+---
+
+[W.I.P.]
+
+* The test-script currently require Python2.6+. Because some old images can't be upgraded to it the test will need to be made backward compatible.
+* refactor nova-agent testing to a pluggable arch. to ease-up cloud-init adaptation
+
+---
