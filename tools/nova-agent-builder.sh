@@ -69,7 +69,7 @@ patchelf_git(){
   _CURR_DIR=`pwd`
   mkdir -p $PATCHELF_BASE
   cd $PATCHELF_BASE
-  wget -c -O "${PATCHELF_TGZ_LOCAL}" "${PATCHELF_TGZ_URL}"
+  wget --no-check-certificate -c -O "${PATCHELF_TGZ_LOCAL}" "${PATCHELF_TGZ_URL}"
   tar zxvf "${PATCHELF_TGZ_LOCAL}"
 
   cd $PATCHELF_SRC_LOCAL
