@@ -13,7 +13,21 @@ FABRIC_ABORT_ON_PROMPTS = False #use ENV val of NOVA_AGENT_TESTNODE_PASSWORD
 FABRIC_WARN_ONLY = True
 
 
-def uptime(host, user, password, shell="bash -l -c"):
+def ls_nova_agent(detail):
+    host, user, password, shell = detail["ip"], "root", detail["password"], detail["shell"]
+    with settings(host_string=host,
+                  user=user,
+                  password=password,
+                  shell=shell,
+                  use_ssh_config=FABRIC_USE_SSH_CONFIG,
+                  warn_only=FABRIC_WARN_ONLY,
+                  abort_on_prompts=FABRIC_ABORT_ON_PROMPTS):
+        run('hostname ; ls -1 /usr/share/nova-agent ; ps aux | grep nova | grep -v grep')
+    fabric.network.disconnect_all()
+
+
+def uptime(detail):
+    host, user, password, shell = detail["ip"], "root", detail["password"], detail["shell"]
     with settings(host_string=host,
                   user=user,
                   password=password,
@@ -34,6 +48,8 @@ def prerequisite(host, user, password, shell="bash -l -c"):
                   warn_only=FABRIC_WARN_ONLY,
                   abort_on_prompts=FABRIC_ABORT_ON_PROMPTS):
         fyl_name = "omni-install.sh"
+        if shell == '/bin/csh -c':
+            fyl_name = "omni-install-csh.sh"
         this_dir = os.path.dirname(os.path.realpath(__file__)) + "/.."
         this_fyl = "%s/lib/%s" % (this_dir, fyl_name)
         that_dir = "/tmp/nova-agent"
@@ -44,7 +60,7 @@ def prerequisite(host, user, password, shell="bash -l -c"):
         if shell == "bash -l -c":
             run("/usr/bin/env bash %s %s" % (that_fyl, "python2"))
         else:
-            run("/bin/csh %s %s %s" % (that_fyl, "python2", "bash"))
+            run("/bin/csh %s %s %s" % (that_fyl, "python", "bash"))
     fabric.network.disconnect_all()
 
 

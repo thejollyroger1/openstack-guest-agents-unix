@@ -127,18 +127,18 @@ def map_nodes(conn, nodes_password, datafile):
 def create_bintars(datafile):
     _datashelve = data_handler.DataShelve()
     _data = _datashelve.load_history(datafile)
-    whitelist_pattern = re.compile(r"CentOS.6\.4|FreeBSD.9\.2", re.IGNORECASE)
+    whitelist_pattern = re.compile(r"CentOS.6\.5$|FreeBSD.9\.2$", re.IGNORECASE)
     bintar_nodes = [detail for uuid, detail in _data.items() if re.findall(whitelist_pattern, detail["name"]) != []]
     for detail in bintar_nodes:
-        nova_agent_fabric.uptime(detail["ip"], "root", detail["password"], detail["shell"])
-        nova_agent_fabric.create_nova_agent_bintar(detail["ip"], "root", detail["password"], detail["shell"])
+        nova_agent_fabric.prerequisite(detail["ip"], "root", detail["password"], detail["shell"])
+        nova_agent_fabric.create_nova_agent_bintar(detail["ip"], "root", detail["password"])
     _datashelve.save_history(_data)
 
 
 def run_at_nodes(datafile, task):
     _datashelve = data_handler.DataShelve()
     _data = _datashelve.load_history(datafile)
-    blacklist_pattern = re.compile(r"FreeBSD|OpenSUSE|Gentoo", re.IGNORECASE)
+    blacklist_pattern = re.compile(r"NOTHING", re.IGNORECASE)
     _nodes = [detail for uuid, detail in _data.items() if re.findall(blacklist_pattern, detail["name"]) == []]
     for detail in _nodes:
         task(detail)
@@ -154,25 +154,30 @@ def test_nova_agent(detail):
     nova_agent_fabric.test_nova_agent(detail["ip"], "root", detail["password"])
 
 
+def destroy_nodes(conn, datafile):
+    try:
+        _datashelve = data_handler.DataShelve()
+        _data = _datashelve.load_history(datafile)
+        blacklist_pattern = re.compile(r"NOTHING", re.IGNORECASE)
+        _nodes_uuid = [uuid for uuid, detail in _data.items() if re.findall(blacklist_pattern, detail["name"]) == []]
+        _datashelve.save_history(_data)
+
+        all_nodes = conn.list_nodes()
+        for _node in all_nodes:
+            if _node.uuid in _nodes_uuid:
+                print("Destrying instance~ uuid: %s, name: %s" %
+                      (_node.uuid, _node.name))
+                conn.destroy_node(_node)
+        return True
+    except:
+        print("Destorying nodes failed.")
+        return False
+
+
 def banner(msg):
     print("\n||||||||||||< %s >||||||||||||\n" % msg)
 
 
 if __name__ == "__main__":
-    cloud_type = "rackspace-nova-dfw"
-    user, key = config.cloud(sys.argv[1], cloud_type)
-    conn = provider.connection(user, key, cloud_type)
-
-    banner("CREATE NODES")
-    nodes_password = create_nodes(conn)
-    banner("MAP CREATED NODES TO CONFIG")
-    map_nodes(conn, nodes_password, NODE_DATAFILE)
-    banner("READ NODES CONFIG")
-    read_nodes_config()
-    banner("CREATE BINTARs")
-    create_bintars(NODE_DATAFILE)
-    banner("UPDATE NOVA AGENT")
-    run_at_nodes(NODE_DATAFILE, update_nova_agent)
-    banner("TEST NOVA AGENT")
-    run_at_nodes(NODE_DATAFILE, test_nova_agent)
-
+    print("It's supposed to usable by fabfile only.")
+    sys.exit(1)
