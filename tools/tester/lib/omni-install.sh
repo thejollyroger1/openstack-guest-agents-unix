@@ -1,4 +1,4 @@
-#!bash
+#!/usr/bin/env bash
 
 #####################################################################
 # source: https://github.com/abhishekkr/raguel/blob/master/src/configurator/distro_manager.sh

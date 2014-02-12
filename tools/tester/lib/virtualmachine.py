@@ -14,6 +14,7 @@ def create(conn, name, image, size):
     """
     conn, name, image, size
     """
+
     userdata_contents = """#!/usr/bin/env bash
 
     touch ~/cloudinit_ran
