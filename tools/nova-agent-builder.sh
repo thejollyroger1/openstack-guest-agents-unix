@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ##### NOVA AGENT BUILDER
 ##### how_to:$ sh nova-agent-builder.sh help
 ##### W.I.P. works fine for most of cases,
@@ -9,6 +9,8 @@ export LANGUAGE="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="UTF-8"
 export LANG="en_US.UTF-8"
+
+alias wget="wget --no-check-certificate"
 
 ##### Var
 INSTALL_PIP='easy_install pip'
@@ -298,14 +300,9 @@ clone_nova_agent(){
   mkdir -p $BASE_DIR
   cd $BASE_DIR
 
-  if [ -d $BASE_DIR/$REPO_DIR ]; then
-    cd $REPO_DIR
-    git checkout .
-    git pull
-  else
-    git clone $NOVA_AGENT_REPO $REPO_DIR
-    cd $REPO_DIR
-  fi
+  rm -rf "${BASE_DIR}/${REPO_DIR}"
+  git clone $NOVA_AGENT_REPO $REPO_DIR
+  cd $REPO_DIR
   branch_nova_agent
   patch_nova_agent
 }
