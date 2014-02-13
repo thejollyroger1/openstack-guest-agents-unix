@@ -41,7 +41,11 @@ class XSComm(object):
                 XENSTORE_RESPONSE_PATH)
 
         self.xs_handle = pyxenstore.Handle()
-        self.xs_handle.mkdir(self.request_path)
+        try:
+            self.xs_handle.mkdir(self.request_path)
+        except:
+            pass
+
         self.requests = []
 
     def _check_handle(self):
