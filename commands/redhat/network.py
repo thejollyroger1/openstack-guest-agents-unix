@@ -202,6 +202,11 @@ def _get_file_data(ifname_prefix, interface):
 
     route_data = ''
     for i, route in enumerate(interface['routes']):
+        if route['network'] == '0.0.0.0' and \
+                route['netmask'] == '0.0.0.0' and \
+                'gateway4' in interface and \
+                route['gateway'] == interface['gateway4']:
+            continue
         route_data += "ADDRESS%d=%s\n" % (i, route['network'])
         route_data += "NETMASK%d=%s\n" % (i, route['netmask'])
         route_data += "GATEWAY%d=%s\n" % (i, route['gateway'])

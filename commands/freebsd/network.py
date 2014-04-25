@@ -211,6 +211,10 @@ def _create_rcconf_file(infile, interfaces, hostname):
             ifname_suffix_num += 1
 
         for route in interface['routes']:
+            if route['network'] == '0.0.0.0' and \
+                    route['netmask'] == '0.0.0.0' and \
+                    route['gateway'] == gateway4:
+                continue
             if ':' in route['network']:
                 # ipv6
                 fmt = '-net %(network)s/%(netmask)s %(gateway)s'
