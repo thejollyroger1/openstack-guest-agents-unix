@@ -234,6 +234,11 @@ def _get_file_data(interfaces):
             ifname_suffix_num += 1
 
         for route in interface['routes']:
+            if route['network'] == '0.0.0.0' \
+                    and route['netmask'] == '0.0.0.0'\
+                    and 'gateway4' in interface \
+                    and route['gateway'] == interface['gateway4']:
+                continue
             file_data += "    post-up route add -net %(network)s " \
                          "netmask %(netmask)s gw %(gateway)s || true\n" % route
             file_data += "    pre-down route del -net %(network)s " \

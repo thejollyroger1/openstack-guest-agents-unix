@@ -191,6 +191,10 @@ def _get_file_data(ifname, interface):
 
     route_data = ''
     for route in interface['routes']:
+        if route['network'] == '0.0.0.0' and \
+                route['netmask'] == '0.0.0.0' and \
+                route['gateway'] == gateway4:
+            continue
         network = route['network']
         netmask = route['netmask']
         gateway = route['gateway']

@@ -373,6 +373,11 @@ def _update_rc_conf_legacy(infile, interfaces):
             ifaces.append((ifname.replace(':', '_'), ' '.join(line)))
 
         for i, route in enumerate(interface['routes']):
+            if route['network'] == '0.0.0.0' and \
+                    route['netmask'] == '0.0.0.0' and \
+                    route['gateway'] == gateway4:
+                continue
+
             line = "-net %(network)s netmask %(netmask)s gw %(gateway)s" % \
                     route
 
@@ -499,7 +504,10 @@ def _get_file_data_netctl(ifname, interface):
             print >>outfile, 'Gateway6=%s' % gateway6
 
     routes = ['%(network)s/%(netmask)s via %(gateway)s' % route
-              for route in interface['routes']]
+              for route in interface['routes'] if not
+              route['network'] == '0.0.0.0' and not
+              route['netmask'] == '0.0.0.0' and not
+              route['gateway'] == gateway4]
 
     if routes:
         print >>outfile, 'Routes=(\'%s\')' % '\' \''.join(routes)
@@ -552,7 +560,10 @@ def _get_file_data_netcfg(ifname, interface):
             print >>outfile, 'GATEWAY6="%s"' % gateway6
 
     routes = ['"%(network)s/%(netmask)s via %(gateway)s"' % route 
-              for route in interface['routes']]
+              for route in interface['routes'] if not
+              route['network'] == '0.0.0.0' and not
+              route['netmask'] == '0.0.0.0' and not
+              route['gateway'] == gateway4]
 
     if routes:
         print >>outfile, 'ROUTES=(%s)' % ' '.join(routes)
