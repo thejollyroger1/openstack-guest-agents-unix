@@ -236,7 +236,7 @@ def _get_file_data(interfaces):
         for route in interface['routes']:
             if route['network'] == '0.0.0.0' \
                     and route['netmask'] == '0.0.0.0'\
-                    and 'gateway4' in interface and \
+                    and 'gateway4' in interface \
                     and route['gateway'] == interface['gateway4']:
                 continue
             file_data += "    post-up route add -net %(network)s " \
