@@ -73,7 +73,10 @@ static PyObject *_agentlib_get_interfaces(PyObject *self, PyObject *args)
             goto next;
 
 #if defined(__linux__)
-        if (ifa->ifa_addr->sa_family != PF_PACKET)
+        if (ifa->ifa_addr == NULL)
+	    goto next;
+
+	if (ifa->ifa_addr->sa_family != PF_PACKET)
             goto next;
 
         struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
