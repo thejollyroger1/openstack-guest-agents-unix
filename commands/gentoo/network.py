@@ -102,8 +102,8 @@ def configure_network(hostname, interfaces):
 
     # Restart network
     for ifname in ifaces:
-        if not _clean_assigned_ip(ifname):
-            return (500, "Couldn't flush network %s: %d" % (ifname, status))
+        #if not _clean_assigned_ip(ifname):
+            #return (500, "Couldn't flush network %s: %d" % (ifname, status))
 
         scriptpath = '/etc/init.d/net.%s' % ifname
         if not os.path.exists(scriptpath):
