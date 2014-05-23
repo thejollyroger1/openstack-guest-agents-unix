@@ -79,7 +79,7 @@ def configure_network(hostname, interfaces):
         return (500, "Couldn't set hostname: %s" % str(e))
 
     # Restart network
-    logging.debug('executing /etc/init.d/network restart')
+    logging.debug('executing systemctl restart network.service')
     p = subprocess.Popen(["systemctl", "restart", "network.service"],
             stdin=pipe, stdout=pipe, stderr=pipe, env={})
     logging.debug('waiting on pid %d' % p.pid)

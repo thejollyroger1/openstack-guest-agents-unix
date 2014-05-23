@@ -57,7 +57,7 @@ nova_agent="${sbindir}/nova-agent"
 agent_config="@prefix@/share/@PACKAGE@/nova-agent.py"
 pidfile="/var/run/nova-agent.pid"
 logfile="/var/log/nova-agent.log"
-loglevel="info"
+loglevel="debug"
 
 #####
 # Setting PYTHONPATH Environment Variable:
