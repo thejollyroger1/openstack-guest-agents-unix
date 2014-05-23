@@ -80,7 +80,7 @@ def configure_network(hostname, interfaces):
 
     # Restart network
     logging.debug('executing /etc/init.d/network restart')
-    p = subprocess.Popen(["/etc/init.d/network", "restart"],
+    p = subprocess.Popen(["systemctl", "restart", "network.service"],
             stdin=pipe, stdout=pipe, stderr=pipe, env={})
     logging.debug('waiting on pid %d' % p.pid)
     status = os.waitpid(p.pid, 0)[1]
