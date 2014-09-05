@@ -504,7 +504,7 @@ def _update_resolvconf_base(nameservers):
                 nameservers.extend(entry[0].split()[1:])
 
         nameservers = list(set(nameservers))
-        nameservers = ["nameservers %s" % dns for dns in nameservers]
+        nameservers = ["nameserver %s" % dns for dns in nameservers]
     else:
         raise CustomErrorResolvConfBase("Error while updating resolvconf base"
                                         "config file with nameservers.")
