@@ -185,7 +185,7 @@ def _confd_net_file(interfaces):
     lines = []
     lines.append(_header())
     lines.append("")
-    lines.append('modules="ifconfig"')
+    lines.append('modules="iproute2"')
     lines.append("")
     lines.append("")
 
