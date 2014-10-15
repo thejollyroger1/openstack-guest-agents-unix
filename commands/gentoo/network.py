@@ -237,7 +237,10 @@ def _confd_net_file_legacy(interfaces):
     lines = []
     lines.append(_header())
     lines.append("")
-    lines.append('modules=( "ifconfig" )')
+    if commands.utils.is_system_command("ip"):
+        lines.append('modules="iproute2"')
+    else:
+        lines.append('modules="ifconfig"')
     lines.append("")
     lines.append("")
 
