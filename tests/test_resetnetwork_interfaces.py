@@ -343,8 +343,8 @@ class TestInterfacesUpdates(agent_test.TestCase):
         self.assertTrue('net' in outfiles)
 
         generated = outfiles['net'].rstrip()
-
-        pattern = ('modules=\( "ifconfig" \)\n*' +
+        # (todo: naterh) Update tests to mock for both ifconfig/iproute2
+        pattern = ('modules=\( "ifconfig|iproute2" \)\n*' +
                    '# Label public\n*' +
                    'config_eth0=\(\s*"192.0.2.42 netmask 255.255.255.0"\s*\)\n*' +
                    'routes_eth0=\(\s*"default via 192.0.2.1"\s*\)\n*' +
@@ -371,8 +371,9 @@ class TestInterfacesUpdates(agent_test.TestCase):
 
         self.assertTrue('net' in outfiles)
 
+        # (todo: naterh) Update tests to mock for both ifconfig/iproute2
         generated = outfiles['net'].rstrip()
-        pattern = ('modules=\( "ifconfig" \)\n*' +
+        pattern = ('modules=\( "ifconfig|iproute2" \)\n*' +
                    '# Label public\n*' +
                    'config_eth0=\(\s*"{ip}/{netmask_len}"\s*\)\n*' +
                    'routes_eth0=\(\s*"default via {gateway}"\s*\)\n*' +
@@ -399,8 +400,9 @@ class TestInterfacesUpdates(agent_test.TestCase):
 
         self.assertTrue('net' in outfiles)
 
+        # (todo: naterh) Update tests to mock for both ifconfig/iproute2
         generated = outfiles['net'].rstrip()
-        pattern = ('modules="ifconfig"\n*' +
+        pattern = ('modules="ifconfig|iproute2"\n*' +
                    '# Label public\n*' +
                    'config_eth0="\s*{ip}/{netmask_len}\s*"\n*' +
                    'routes_eth0="\s*default via {gateway}\s*"\n*' +
@@ -429,8 +431,9 @@ class TestInterfacesUpdates(agent_test.TestCase):
 
         self.assertTrue('net' in outfiles)
 
+        # (todo: naterh) Update tests to mock for both ifconfig/iproute2
         generated = outfiles['net'].rstrip()
-        pattern = ('modules="ifconfig"\n*' +
+        pattern = ('modules="ifconfig|iproute2"\n*' +
                    '# Label public\n*' +
                    'config_eth0="\s*{ip}/{netmask_len}\s*"\n*' +
                    'routes_eth0="\s*default via {gateway}\s*"\n*' +
