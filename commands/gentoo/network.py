@@ -208,7 +208,7 @@ def _confd_net_file(interfaces):
         lines.extend([ "  {0}/{1} via {2}".format(route['network'],
                         commands.network.NETMASK_TO_PREFIXLEN[route['netmask']],
                         route['gateway']
-                    ) for route in interface['routes'] if not 
+                    ) for route in interface['routes'] if not
                     route['network'] == '0.0.0.0' and not
                     route['netmask'] == '0.0.0.0' and
                     'gateway4' in interface and not
@@ -263,7 +263,7 @@ def _confd_net_file_legacy(interfaces):
         lines.append("routes_{0}=(".format(name))
         lines.extend([ "  \"{0} netmask {1} gw {2}\"".format(
                         route['network'], route['netmask'], route['gateway']
-                    ) for route in interface['routes'] if not 
+                    ) for route in interface['routes'] if not
                     route['network'] == '0.0.0.0' and not
                     route['netmask'] == '0.0.0.0' and
                     'gateway4' in interface and not
