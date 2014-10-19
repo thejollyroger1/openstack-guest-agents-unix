@@ -28,7 +28,7 @@ suse network helper module
 # - DNS is global (/etc/sysconfig/network/config)
 
 import os
-import time
+#import time
 import glob
 import subprocess
 import logging
@@ -79,10 +79,13 @@ def configure_network(hostname, interfaces):
         return (500, "Couldn't set hostname: %s" % str(e))
 
     # Restart network
-    time.sleep(2)
-    logging.debug('executing systemctl restart network.service')
-    p = subprocess.Popen(["systemctl", "restart", "network.service"],
-            stdin=pipe, stdout=pipe, stderr=pipe, env={})
+    #time.sleep(2) - Not sure if this is needed(naterh)
+    #logging.debug('executing systemctl restart network.service')
+    #p = subprocess.Popen(["systemctl", "restart", "network.service"],
+    logging.debug('executing /etc/init.d/network restart')
+    p = subprocess.Popen(
+        ["/etc/init.d/network", "restart"],
+        stdin=pipe, stdout=pipe, stderr=pipe, env={})
     logging.debug('waiting on pid %d' % p.pid)
     status = os.waitpid(p.pid, 0)[1]
     logging.debug('status = %d' % status)
