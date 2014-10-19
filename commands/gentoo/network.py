@@ -59,6 +59,7 @@ import re
 from datetime import datetime
 
 import commands.network
+import commands.utils
 
 HOSTNAME_FILE = "/etc/conf.d/hostname"
 NETWORK_FILE = "/etc/conf.d/net"
@@ -102,8 +103,13 @@ def configure_network(hostname, interfaces):
 
     # Restart network
     for ifname in ifaces:
-        #if not _clean_assigned_ip(ifname):
-            #return (500, "Couldn't flush network %s: %d" % (ifname, status))
+        if commands.utils.is_system_command("ip"):
+            if not _clean_assigned_ip(ifname):
+                return (500, "Couldn't flush network %s: %d" %
+                        (ifname, status))
+        else:
+            logging.warning("Couldn't flush old network configuration as" +
+                          " safeguard. Required 'ip' command not present.")
 
         scriptpath = '/etc/init.d/net.%s' % ifname
         if not os.path.exists(scriptpath):
@@ -179,7 +185,10 @@ def _confd_net_file(interfaces):
     lines = []
     lines.append(_header())
     lines.append("")
-    lines.append('modules="ifconfig"')
+    if commands.utils.is_system_command("ip"):
+        lines.append('modules="iproute2"')
+    else:
+        lines.append('modules="ifconfig"')
     lines.append("")
     lines.append("")
 
@@ -199,7 +208,7 @@ def _confd_net_file(interfaces):
         lines.extend([ "  {0}/{1} via {2}".format(route['network'],
                         commands.network.NETMASK_TO_PREFIXLEN[route['netmask']],
                         route['gateway']
-                    ) for route in interface['routes'] if not 
+                    ) for route in interface['routes'] if not
                     route['network'] == '0.0.0.0' and not
                     route['netmask'] == '0.0.0.0' and
                     'gateway4' in interface and not
@@ -232,7 +241,10 @@ def _confd_net_file_legacy(interfaces):
     lines = []
     lines.append(_header())
     lines.append("")
-    lines.append('modules=( "ifconfig" )')
+    if commands.utils.is_system_command("ip"):
+        lines.append('modules="iproute2"')
+    else:
+        lines.append('modules="ifconfig"')
     lines.append("")
     lines.append("")
 
@@ -251,7 +263,7 @@ def _confd_net_file_legacy(interfaces):
         lines.append("routes_{0}=(".format(name))
         lines.extend([ "  \"{0} netmask {1} gw {2}\"".format(
                         route['network'], route['netmask'], route['gateway']
-                    ) for route in interface['routes'] if not 
+                    ) for route in interface['routes'] if not
                     route['network'] == '0.0.0.0' and not
                     route['netmask'] == '0.0.0.0' and
                     'gateway4' in interface and not
