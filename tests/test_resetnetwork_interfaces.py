@@ -344,17 +344,13 @@ class TestInterfacesUpdates(agent_test.TestCase):
 
         generated = outfiles['net'].rstrip()
         # (todo: naterh) Update tests to mock for both ifconfig/iproute2
-        pattern = ('modules=\( "ifconfig|iproute2" \)\n*' +
+        # (todo: naterh) Remove excessive unused kwargs
+        pattern = ('.*?modules="(ifconfig|iproute2)"\n*' +
                    '# Label public\n*' +
                    'config_eth0=\(\s*"192.0.2.42 netmask 255.255.255.0"\s*\)\n*' +
                    'routes_eth0=\(\s*"default via 192.0.2.1"\s*\)\n*' +
-                   'dns_servers_eth0=\(\s*"192.0.2.2"\s*\)').format(
-                       ip=interface['ipv4'][0][0],
-                       netmask=interface['ipv4'][0][1],
-                       gateway=interface['gateway4'],
-                       dns=interface['dns'][0]
-                   )
-        expected_regex = re.compile(pattern, re.MULTILINE)
+                   'dns_servers_eth0=\(\s*"192.0.2.2"\s*\)')
+        expected_regex = re.compile(pattern, re.DOTALL)
 
         self.assertRegexpMatches(generated, expected_regex)
 
@@ -373,17 +369,17 @@ class TestInterfacesUpdates(agent_test.TestCase):
 
         # (todo: naterh) Update tests to mock for both ifconfig/iproute2
         generated = outfiles['net'].rstrip()
-        pattern = ('modules=\( "ifconfig|iproute2" \)\n*' +
+        pattern = ('.*?modules="(ifconfig|iproute2)"\n*' +
                    '# Label public\n*' +
                    'config_eth0=\(\s*"{ip}/{netmask_len}"\s*\)\n*' +
                    'routes_eth0=\(\s*"default via {gateway}"\s*\)\n*' +
                    'dns_servers_eth0=\(\s*"{dns}"\s*\)').format(
-                       ip=interface['ipv6'][0][0],
-                       netmask_len=interface['ipv6'][0][1],
-                       gateway=interface['gateway6'],
-                       dns=interface['dns'][0]
-                   )
-        expected_regex = re.compile(pattern, re.MULTILINE)
+            ip=interface['ipv6'][0][0],
+            netmask_len=interface['ipv6'][0][1],
+            gateway=interface['gateway6'],
+            dns=interface['dns'][0]
+        )
+        expected_regex = re.compile(pattern, re.DOTALL)
 
         self.assertRegexpMatches(generated, expected_regex)
 
