@@ -41,6 +41,7 @@ fi
 export PYTHONPATH="$NOVA_PYTHONPATH:$PYTHONPATH"
 export PYTHONHOME="$NOVA_PYTHONPATH:$PYTHONPATH"
 
+. /etc/conf.d/nova-agent
 
 depend() {
   before net
