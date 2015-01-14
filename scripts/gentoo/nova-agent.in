@@ -23,6 +23,7 @@ exec_prefix="@exec_prefix@"
 sbindir="@sbindir@"
 datadir="@datarootdir@/nova-agent"
 reallibdir="@prefix@/share/@PACKAGE@/@PACKAGE_VERSION@/lib"
+instance_config="/etc/conf.d/nova-agent"
 
 nova_agent="${sbindir}/nova-agent"
 agent_config="@prefix@/share/@PACKAGE@/nova-agent.py"
@@ -41,7 +42,10 @@ fi
 export PYTHONPATH="$NOVA_PYTHONPATH:$PYTHONPATH"
 export PYTHONHOME="$NOVA_PYTHONPATH:$PYTHONPATH"
 
-. /etc/conf.d/nova-agent
+if [ -f "$instance_config" ]
+then
+  source $instance_config
+fi
 
 depend() {
   before net
@@ -60,7 +64,7 @@ start() {
         /usr/bin/xenstore write data/host/system-init '{"name":"resetnetwork","value":""}'
         /usr/bin/xenstore watch -n 1 data/guest/system-init >/dev/null
         [ "$(/usr/bin/xenstore read data/guest/system-init | wc -l)" -gt "0" ] || eend 1
-        echo "UUID=\"$(/usr/bin/xenstore read name)\"" > /etc/conf.d/nova-agent
+        echo "UUID=\"$(/usr/bin/xenstore read name)\"" > $instance_config
     fi
 
     eend $RET
