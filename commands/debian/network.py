@@ -102,11 +102,36 @@ def configure_network(hostname, interfaces):
         commands.network.update_files(update_files)
     except Exception, e:
         files_update_error = e
+    
+    #NOTE(tpownall):Ubuntu does not allow network restarts
+    #https://bugs.launchpad.net/ubuntu/+source/ifupdown/+bug/1301015
+    upstart_enabled = False
+    try:
+        init_cmd = '/sbin/init --version'
+        init_output = subprocess.check_output(init_cmd.split())
+        if 'upstart' in init_output:
+            upstart_enabled = True
+    except Exception, e:
+        logging.debug('init_cmd failed. %s' % e)
+
+    upstart_key = False    
+    try:
+        with open('/etc/init.d/networking', 'r') as netscript:
+            upstart = 'init_is_upstart'
+            for line in netscript:
+                if upstart in line:
+                    upstart_key = True
+                    break
+    except Exception, e:
+        logging.debug('Failed to open the init.d networking script')
 
     # Restart network
     status = _run_system_command("/etc/init.d/networking restart")
     if status != 0:
         status = _run_system_command("/usr/sbin/service networking restart")
+    if upstart_key == True and upstart_enabled == True:
+        logging.debug('Ignoring networking restart response due to upstart')
+        status = 0
 
     # Bring back up what we can
     _run_on_interfaces("/sbin/ifup")
