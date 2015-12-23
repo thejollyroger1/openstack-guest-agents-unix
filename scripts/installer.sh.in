@@ -41,6 +41,14 @@ add_to_startup() {
         fi
     elif [ -f /sbin/chkconfig ] ; then
         # Red Hat style
+        if [ -d /usr/lib/systemd/system/ ]; then
+            if [ -f /usr/lib/systemd/system/nova-agent.service ]; then
+                echo "Service file exists, moving on"
+            else
+                touch /usr/lib/systemd/system/nova-agent.service
+            fi
+        #Populate service file for Rhel/CentOS
+        cat ${dataversdir}/etc/systemd/system/nova-agent.service > /usr/lib/systemd/system/nova-agent.service
         /sbin/chkconfig nova-agent on > /dev/null 2>&1
     elif [ -f /sbin/rc-update ] ; then
         # Gentoo style
