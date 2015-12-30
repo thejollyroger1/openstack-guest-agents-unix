@@ -51,7 +51,7 @@ add_to_startup() {
         cat ${dataversdir}/etc/systemd/system/nova-agent.service > /usr/lib/systemd/system/nova-agent.service
         #Populate nova-agent environment file
         echo 'LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:'${reallibdir}'"
-        PYTHONPATH="${PYTHONPATH}:'${reallibdir}'/python2.6/site-packages:'${reallibdir}'/python2.6/"' > /etc/nova-agent.env
+PYTHONPATH="${PYTHONPATH}:'${reallibdir}'/python2.6/site-packages:'${reallibdir}'/python2.6/"' > /etc/nova-agent.env
         systemctl daemon-reload
         /sbin/chkconfig nova-agent on > /dev/null 2>&1
     elif [ -f /sbin/rc-update ] ; then
